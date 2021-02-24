@@ -48,8 +48,10 @@ class ArtistsFragment : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        _binding?.let {
+            outState.putString(SAVED_SEARCH, binding.currentArtist.text.toString())
+        }
         super.onSaveInstanceState(outState)
-        outState.putString(SAVED_SEARCH, binding.currentArtist.text.toString())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
