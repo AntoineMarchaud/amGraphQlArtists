@@ -1,0 +1,59 @@
+query Artists($name : String!) {
+    search {
+        artists(query: $name, first: 15, after: null) {
+            nodes {
+                ...ArtistBasicFragment
+            }
+        }
+    }
+}
+query Artist($id: ID!) {
+    node(id: $id) {
+        ...ArtistDetailsFragment
+    }
+}
+
+
+fragment ArtistDetailsFragment on Artist {
+    ...ArtistBasicFragment
+    country
+    gender
+    type
+    area {
+        name
+    }
+    rating {
+        value
+    }
+    releaseGroups(type: [ALBUM]) {
+        nodes {
+            title
+            coverArtArchive {
+                front
+            }
+        }
+    }
+    relationships {
+        artists {
+            nodes {
+                target {
+                    ...ArtistBasicFragment
+                }
+            }
+        }
+    }
+}
+
+fragment ArtistBasicFragment on Artist {
+    id
+    mbid
+    name
+    disambiguation
+    fanArt {
+        backgrounds {
+            url
+        }
+    }
+}
+
+

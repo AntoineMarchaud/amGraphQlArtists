@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/splashFragment">
+
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.amarchaud.amgraphqlartist.view.SplashFragment"
+        android:label="splash_fragment"
+        tools:layout="@layout/fragment_splash" >
+        <action
+            android:id="@+id/action_splashFragment_to_artistsFragment"
+            app:destination="@id/artistsFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/artistsFragment"
+        android:name="com.amarchaud.amgraphqlartist.view.ArtistsFragment"
+        android:label="ArtistsFragment" >
+        <action
+            android:id="@+id/action_artistsFragment_to_artistDetailFragment"
+            app:destination="@id/artistDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/bookmarksFragment"
+        android:name="com.amarchaud.amgraphqlartist.view.BookmarksFragment"
+        android:label="BookmarksFragment" >
+        <action
+            android:id="@+id/action_bookmarksFragment_to_artistDetailFragment"
+            app:destination="@id/artistDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/artistDetailFragment"
+        android:name="com.amarchaud.amgraphqlartist.view.ArtistDetailFragment"
+        android:label="ArtistDetailFragment" >
+        <argument
+            android:name="artist"
+            app:argType="com.amarchaud.amgraphqlartist.model.entity.ArtistEntity" />
+    </fragment>
+</navigation>

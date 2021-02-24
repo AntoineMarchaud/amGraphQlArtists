@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">amGraphQLArtist</string>
+    <!-- nav graph -->
+    <string name="menu_artists_title">Artists</string>
+    <string name="menu_artists_description">This is a list of artists</string>
+    <string name="menu_bookmarks_title">Bookmarks</string>
+    <string name="menu_bookmarks_description">This is your list of best artists</string>
+    <!-- Fragment Artists -->
+    <string name="EnterArtistHint">Enter your artist here</string>
+    <string name="ButtonSearchText">Search</string>
+    <!-- item artist -->
+    <string name="ArtistDetail">Details</string>
+    <!--ArtistsAdapter adapter, warning popup -->
+    <string name="DeleteEntryTitle">Delete entry</string>
+    <string name="DeleteEntryMessage">Are you sure you want to delete this entry?</string>
+</resources>

@@ -1,0 +1,90 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt' // databinding
+    id 'dagger.hilt.android.plugin'
+    id 'androidx.navigation.safeargs.kotlin'
+    id 'com.apollographql.apollo'
+    id 'kotlin-parcelize'
+}
+
+android {
+    compileSdkVersion 30
+
+    buildFeatures {
+        dataBinding true
+        viewBinding true
+    }
+
+    defaultConfig {
+        applicationId "com.amarchaud.amGraphQLArtist"
+        minSdkVersion 24
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.3.3'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    // fragment
+    implementation "androidx.fragment:fragment-ktx:$fragment_version"
+    // LiveData
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.0'
+    // ViewModel
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0'
+
+    // Hilt
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    // Inject ViewModel objects with Hilt (@ViewModelInject)
+    implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
+
+    // Room
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+
+    // apollographql
+    implementation "com.apollographql.apollo:apollo-runtime:$apollo_version"
+    // optional: if you want to use the normalized cache
+    implementation "com.apollographql.apollo:apollo-normalized-cache-sqlite:$apollo_version"
+    // optional: for coroutines support
+    implementation "com.apollographql.apollo:apollo-coroutines-support:$apollo_version"
+    // optional: Most of apollo-android does not depend on Android in practice and runs on any JVM or on Kotlin native. apollo-android-support contains a few Android-only helper classes. For an example to send logs to logcat or run callbacks on the main thread.
+    implementation("com.apollographql.apollo:apollo-android-support:$apollo_version")
+
+    // glide
+    implementation "com.github.bumptech.glide:glide:$glide_version"
+    kapt "com.github.bumptech.glide:compiler:$glide_version"
+}
