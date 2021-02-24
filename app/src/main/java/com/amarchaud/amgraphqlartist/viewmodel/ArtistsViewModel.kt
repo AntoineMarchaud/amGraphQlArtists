@@ -84,4 +84,8 @@ class ArtistsViewModel @Inject constructor(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+    }
+
 }
