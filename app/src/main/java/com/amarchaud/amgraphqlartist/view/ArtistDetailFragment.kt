@@ -74,7 +74,6 @@ class ArtistDetailFragment : Fragment() {
 
             commonDetails.artistDetails.isEnabled = false
             commonDetails.artistDetails.visibility = View.INVISIBLE
-            commonDetails.isBookMarked.setImageResource(R.drawable.yellow_star)
 
             commonDetails.isBookMarked.setOnClickListener {
                 viewModel.onBookMarkedClick()

@@ -83,7 +83,13 @@ class ArtistDetailViewModel @AssistedInject constructor(
     var artistsRelationshipsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
     var albumsLiveData: MutableLiveData<List<ArtistDetailsFragment.Node>> = MutableLiveData()
 
-    var isArtistInDatabase: MutableLiveData<Boolean> = MutableLiveData(true)
+    var isArtistInDatabase: MutableLiveData<Boolean> = MutableLiveData()
+
+    init {
+        viewModelScope.launch {
+            isArtistInDatabase.postValue(myDao.getOneBookmark(artist.id) != null)
+        }
+    }
 
     fun onSearch() {
 

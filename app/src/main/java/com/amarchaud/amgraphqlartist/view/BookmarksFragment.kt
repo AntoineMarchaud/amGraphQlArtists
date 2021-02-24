@@ -65,6 +65,7 @@ class BookmarksFragment : Fragment() {
                 artistsRecyclerAdapter.notifyDataSetChanged()
             })
 
+
             artistToDeleteViewModel.artistToDeleteLiveData.observe(viewLifecycleOwner, {
                 if (it != null) {
                     val posToDelete = artistsRecyclerAdapter.artists.indexOf(it.artist)
