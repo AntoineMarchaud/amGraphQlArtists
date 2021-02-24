@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
 import com.amarchaud.amgraphqlartist.databinding.FragmentBookmarksBinding
@@ -14,6 +15,7 @@ import com.amarchaud.amgraphqlartist.viewmodel.BookmarksViewModel
 import com.amarchaud.amgraphqlartist.viewmodel.data.ArtistToDeleteViewModel
 import com.amarchaud.estats.model.database.AppDao
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -65,10 +67,19 @@ class BookmarksFragment : Fragment() {
 
             artistToDeleteViewModel.artistToDeleteLiveData.observe(viewLifecycleOwner, {
                 if(it != null) {
-                    val posToDelete = artistsRecyclerAdapter.artists.indexOf(it.artist)
-                    if (posToDelete >= 0) {
-                        artistsRecyclerAdapter.artists.removeAt(posToDelete)
-                        artistsRecyclerAdapter.notifyItemRemoved(posToDelete)
+                    lifecycleScope.launch {
+
+                        if(myDao.getOneBookmark(it.artist.id) != null) {
+                            return@launch
+                        }
+
+                        val posToDelete = artistsRecyclerAdapter.artists.indexOf(it.artist)
+                        if (posToDelete >= 0) {
+                            requireActivity().runOnUiThread {
+                                artistsRecyclerAdapter.artists.removeAt(posToDelete)
+                                artistsRecyclerAdapter.notifyItemRemoved(posToDelete)
+                            }
+                        }
                     }
                 }
             })
