@@ -13,4 +13,6 @@
     <!--ArtistsAdapter adapter, warning popup -->
     <string name="DeleteEntryTitle">Delete entry</string>
     <string name="DeleteEntryMessage">Are you sure you want to delete this entry?</string>
+    <!-- other -->
+    <string name="GraphQlError">GraphQlError</string>
 </resources>

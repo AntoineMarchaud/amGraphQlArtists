@@ -2,11 +2,13 @@ package com.amarchaud.amgraphqlartist.viewmodel
 
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.amarchaud.amgraphqlartist.ArtistsQuery
 import com.amarchaud.amgraphqlartist.BR
+import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.base.BaseViewModel
 import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
 import com.apollographql.apollo.ApolloClient
@@ -48,24 +50,33 @@ class ArtistsViewModel @Inject constructor(
                     null
                 }
 
-                val listArtists = mutableListOf<ArtistEntity>()
-                response?.data?.search()?.artists()?.nodes()?.filterNotNull()?.forEach { node ->
+                if(response == null) {
+                    loading = false
+                    notifyPropertyChanged(BR.loading)
 
-                    with(node.fragments().artistBasicFragment()) {
+                    Toast.makeText(app, R.string.GraphQlError, Toast.LENGTH_LONG).show()
 
-                        val imageUrl: String? =
-                            if (fanArt()?.backgrounds()?.size!! > 0) {
-                                fanArt()?.backgrounds()?.get(0)?.url()
-                                    .toString()
-                            } else {
-                                null
-                            }
+                } else {
 
-                        listArtists.add(ArtistEntity(id(), name(), disambiguation(), imageUrl))
+                    val listArtists = mutableListOf<ArtistEntity>()
+                    response.data?.search()?.artists()?.nodes()?.filterNotNull()?.forEach { node ->
+
+                        with(node.fragments().artistBasicFragment()) {
+
+                            val imageUrl: String? =
+                                if (fanArt()?.backgrounds()?.size!! > 0) {
+                                    fanArt()?.backgrounds()?.get(0)?.url()
+                                        .toString()
+                                } else {
+                                    null
+                                }
+
+                            listArtists.add(ArtistEntity(id(), name(), disambiguation(), imageUrl))
+                        }
                     }
-                }
 
-                listOfArtistsLiveData.postValue(listArtists)
+                    listOfArtistsLiveData.postValue(listArtists)
+                }
             }
 
             loading = false

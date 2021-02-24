@@ -2,6 +2,7 @@ package com.amarchaud.amgraphqlartist.viewmodel
 
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.amarchaud.amgraphqlartist.ArtistQuery
 import com.amarchaud.amgraphqlartist.BR
+import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.base.BaseViewModel
 import com.amarchaud.amgraphqlartist.fragment.ArtistDetailsFragment
 import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
@@ -88,7 +90,7 @@ class ArtistDetailViewModel @AssistedInject constructor(
         viewModelScope.launch {
 
             loadingGeneral = true
-            notifyPropertyChanged(BR.loading)
+            notifyPropertyChanged(BR.loadingGeneral)
 
             loadingRelease = true
             notifyPropertyChanged(BR.loadingRelease)
@@ -100,59 +102,70 @@ class ArtistDetailViewModel @AssistedInject constructor(
                 null
             }
 
-            response?.data?.node()?.fragments()?.artistDetailsFragment()?.let {
-
-                // common details
-                with(it.fragments().artistBasicFragment()) {
-
-                    nameLiveData.postValue(name())
-                    disambiguationLiveData.postValue(disambiguation())
-
-                    if (fanArt()?.backgrounds()?.size!! > 0) {
-                        photoUrlLiveData.postValue(
-                            fanArt()?.backgrounds()?.get(0)?.url().toString()
-                        )
-                    }
-                }
-
-                // new details
-                countryCodeDetail = it.country()
-                genderDetail = it.gender()
-                ratingDetail = it.rating()?.value() // rating of the artist
-                typeDetail = it.type() // group or solo
-                countryDetail = it.area()?.name() // name of the country
-                notifyChange()
-
-                albumsLiveData.postValue(it.releaseGroups()?.nodes())
+            if(response == null) {
+                loadingGeneral = false
+                notifyPropertyChanged(BR.loadingGeneral)
 
                 loadingRelease = false
                 notifyPropertyChanged(BR.loadingRelease)
 
-                // TODO relationships is always NULL.... WHY ??????
-                val listArtists = mutableListOf<ArtistEntity>()
-                it.relationships()?.artists()?.nodes()?.filterNotNull()?.forEach { node ->
-                    with(node.target().fragments().artistBasicFragment()) {
+                Toast.makeText(app, R.string.GraphQlError, Toast.LENGTH_LONG).show()
 
-                        if (this == null)
-                            return@with
+            } else {
 
-                        val imageUrl: String? =
-                            if (fanArt()?.backgrounds()?.size!! > 0) {
+                response.data?.node()?.fragments()?.artistDetailsFragment()?.let {
+
+                    // common details
+                    with(it.fragments().artistBasicFragment()) {
+
+                        nameLiveData.postValue(name())
+                        disambiguationLiveData.postValue(disambiguation())
+
+                        if (fanArt()?.backgrounds()?.size!! > 0) {
+                            photoUrlLiveData.postValue(
                                 fanArt()?.backgrounds()?.get(0)?.url().toString()
-                            } else {
-                                null
-                            }
-
-                        listArtists.add(ArtistEntity(id(), name(), disambiguation(), imageUrl))
+                            )
+                        }
                     }
+
+                    // new details
+                    countryCodeDetail = it.country()
+                    genderDetail = it.gender()
+                    ratingDetail = it.rating()?.value() // rating of the artist
+                    typeDetail = it.type() // group or solo
+                    countryDetail = it.area()?.name() // name of the country
+                    notifyChange()
+
+                    albumsLiveData.postValue(it.releaseGroups()?.nodes())
+
+                    loadingRelease = false
+                    notifyPropertyChanged(BR.loadingRelease)
+
+                    // TODO relationships is always NULL.... WHY ??????
+                    val listArtists = mutableListOf<ArtistEntity>()
+                    it.relationships()?.artists()?.nodes()?.filterNotNull()?.forEach { node ->
+                        with(node.target().fragments().artistBasicFragment()) {
+
+                            if (this == null)
+                                return@with
+
+                            val imageUrl: String? =
+                                if (fanArt()?.backgrounds()?.size!! > 0) {
+                                    fanArt()?.backgrounds()?.get(0)?.url().toString()
+                                } else {
+                                    null
+                                }
+
+                            listArtists.add(ArtistEntity(id(), name(), disambiguation(), imageUrl))
+                        }
+                    }
+
+                    artistsRelationshipsLiveData.postValue(listArtists)
+
+                    loadingGeneral = false
+                    notifyPropertyChanged(BR.loadingGeneral)
                 }
-
-                artistsRelationshipsLiveData.postValue(listArtists)
             }
-
-
-            loadingGeneral = false
-            notifyPropertyChanged(BR.loading)
         }
     }
 
