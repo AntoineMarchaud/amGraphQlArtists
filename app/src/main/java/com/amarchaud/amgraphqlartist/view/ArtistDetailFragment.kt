@@ -130,6 +130,8 @@ class ArtistDetailFragment : Fragment() {
         // send event to listener (in our case : previous Fragment)
         if(viewModel.isArtistInDatabase.value != true) {
             artistToDeleteViewModel.artistToDeleteLiveData.postValue(ArtistToDeleteViewModel.ArtistToDelete(args.artist))
+        } else {
+            artistToDeleteViewModel.artistToDeleteLiveData.postValue(null)
         }
     }
 }

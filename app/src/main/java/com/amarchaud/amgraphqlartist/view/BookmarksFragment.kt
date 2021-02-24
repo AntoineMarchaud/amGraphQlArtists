@@ -66,20 +66,12 @@ class BookmarksFragment : Fragment() {
             })
 
             artistToDeleteViewModel.artistToDeleteLiveData.observe(viewLifecycleOwner, {
-                if(it != null) {
-                    lifecycleScope.launch {
+                if (it != null) {
+                    val posToDelete = artistsRecyclerAdapter.artists.indexOf(it.artist)
+                    if (posToDelete >= 0) {
+                        artistsRecyclerAdapter.artists.removeAt(posToDelete)
+                        artistsRecyclerAdapter.notifyItemRemoved(posToDelete)
 
-                        if(myDao.getOneBookmark(it.artist.id) != null) {
-                            return@launch
-                        }
-
-                        val posToDelete = artistsRecyclerAdapter.artists.indexOf(it.artist)
-                        if (posToDelete >= 0) {
-                            requireActivity().runOnUiThread {
-                                artistsRecyclerAdapter.artists.removeAt(posToDelete)
-                                artistsRecyclerAdapter.notifyItemRemoved(posToDelete)
-                            }
-                        }
                     }
                 }
             })
