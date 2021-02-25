@@ -3,20 +3,15 @@ package com.amarchaud.amgraphqlartist.view
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
-import android.view.inputmethod.EditorInfo
-import androidx.annotation.UiThread
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
 import com.amarchaud.amgraphqlartist.databinding.FragmentArtistsBinding
-import com.amarchaud.amgraphqlartist.extensions.hideKeyboard
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
 import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
 import com.amarchaud.amgraphqlartist.viewmodel.ArtistsViewModel
@@ -27,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class ArtistsFragment : Fragment(), IArtistClickListener{
@@ -99,6 +95,17 @@ class ArtistsFragment : Fragment(), IArtistClickListener{
             artistsRecyclerView.layoutManager =
                 LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
             artistsRecyclerView.adapter = artistsRecyclerAdapter
+
+            artistsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    if (!recyclerView.canScrollVertically(1)) {
+                        // bottom of the list !
+                        // call next artists
+                        viewModel.onNextRefresh()
+                    }
+                }
+            })
 
             viewModel.listOfArtistsLiveData.observe(viewLifecycleOwner, {
 

@@ -1,12 +1,30 @@
 query Artists($name : String!) {
     search {
-        artists(query: $name, first: 15, after: null) {
+        artists(query: $name, first: 15, after:  null) {
             nodes {
                 ...ArtistBasicFragment
+            }
+            edges {
+                cursor
             }
         }
     }
 }
+
+query ArtistsFrom($name : String!, $after: String!) {
+    search {
+        artists(query: $name, first: 15, after:  $after) {
+            nodes {
+                ...ArtistBasicFragment
+            }
+            edges {
+                cursor
+            }
+        }
+    }
+}
+
+
 query Artist($id: ID!) {
     node(id: $id) {
         ...ArtistDetailsFragment

@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.amarchaud.amgraphqlartist.ArtistsFromQuery
 import com.amarchaud.amgraphqlartist.ArtistsQuery
 import com.amarchaud.amgraphqlartist.BR
 import com.amarchaud.amgraphqlartist.R
@@ -33,6 +34,8 @@ class ArtistsViewModel @Inject constructor(
     @Bindable
     var loading: Boolean = false
 
+    private var lastCursor: String? = null
+
     var listOfArtistsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
 
     fun onRefresh() {
@@ -49,7 +52,7 @@ class ArtistsViewModel @Inject constructor(
                     null
                 }
 
-                if(response == null) {
+                if (response == null) {
                     loading = false
                     notifyPropertyChanged(BR.loading)
 
@@ -58,6 +61,77 @@ class ArtistsViewModel @Inject constructor(
                 } else {
 
                     val listArtists = mutableListOf<ArtistEntity>()
+
+                    response.data?.search()?.artists()?.nodes()?.forEach { node ->
+
+                        with(node.fragments().artistBasicFragment()) {
+
+                            val imageUrl: String? =
+                                if (fanArt()?.backgrounds()?.size!! > 0) {
+                                    fanArt()?.backgrounds()?.get(0)?.url()
+                                        .toString()
+                                } else {
+                                    null
+                                }
+
+
+                            listArtists.add(ArtistEntity(id(), name(), disambiguation(), imageUrl))
+                        }
+                    }
+
+                    lastCursor = response.data?.search()?.artists()?.edges()?.lastOrNull()?.cursor()
+
+                    listOfArtistsLiveData.postValue(listArtists)
+                }
+            }
+
+            loading = false
+            notifyPropertyChanged(BR.loading)
+        }
+    }
+
+    fun onNextRefresh() {
+
+        if (listOfArtistsLiveData.value.isNullOrEmpty()) {
+            return
+        }
+
+        if (listOfArtistsLiveData.value!!.size < 15) {
+            return
+        }
+
+        if (lastCursor == null)
+            return
+
+        viewModelScope.launch {
+
+            loading = true
+            notifyPropertyChanged(BR.loading)
+
+            currentArtistSearched.let { s ->
+                val response = try {
+                    apolloClient.query(
+                        ArtistsFromQuery(
+                            s,
+                            lastCursor!!
+                        )
+                    ).await()
+                } catch (e: ApolloException) {
+                    Log.d(TAG, "Failure", e)
+                    null
+                }
+
+                if (response == null) {
+                    loading = false
+                    notifyPropertyChanged(BR.loading)
+
+                    Toast.makeText(app, R.string.GraphQlError, Toast.LENGTH_LONG).show()
+
+                } else {
+
+                    val listArtists =
+                        listOfArtistsLiveData.value?.toMutableList() ?: mutableListOf()
+
                     response.data?.search()?.artists()?.nodes()?.filterNotNull()?.forEach { node ->
 
                         with(node.fragments().artistBasicFragment()) {
@@ -74,6 +148,8 @@ class ArtistsViewModel @Inject constructor(
                         }
                     }
 
+                    lastCursor = response.data?.search()?.artists()?.edges()?.lastOrNull()?.cursor()
+
                     listOfArtistsLiveData.postValue(listArtists)
                 }
             }
@@ -81,6 +157,7 @@ class ArtistsViewModel @Inject constructor(
             loading = false
             notifyPropertyChanged(BR.loading)
         }
+
     }
 
 
