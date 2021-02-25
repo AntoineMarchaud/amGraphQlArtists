@@ -24,10 +24,14 @@ fragment ArtistDetailsFragment on Artist {
     }
     rating {
         value
+        voteCount
     }
     releaseGroups(type: [ALBUM]) {
         nodes {
             title
+            rating {
+                value
+            }
             coverArtArchive {
                 front
             }

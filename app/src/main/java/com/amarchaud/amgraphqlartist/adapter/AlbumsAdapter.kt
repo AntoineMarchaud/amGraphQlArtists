@@ -28,6 +28,7 @@ class AlbumsAdapter(private val fragment: Fragment) :
         with(albums[position]) {
 
             holder.binding.albumName.text = title()
+            holder.binding.ratingBar.rating = ratingBar(this)
 
             coverArtArchive()?.front()?.let {
                 try {
@@ -47,5 +48,9 @@ class AlbumsAdapter(private val fragment: Fragment) :
 
     inner class AlbumViewHolder(var binding: ItemAlbumBinding) :
         RecyclerView.ViewHolder(binding.root)
+
+    private fun ratingBar(artistDetailsFragment: ArtistDetailsFragment.Node): Float {
+        return artistDetailsFragment.rating()?.value()?.div(2)?.toFloat() ?: 0f
+    }
 
 }

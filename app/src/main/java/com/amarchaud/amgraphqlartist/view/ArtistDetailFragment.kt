@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.adapter.AlbumsAdapter
@@ -111,8 +112,8 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
             })
             // **************** Recycler View management
 
-            albumsRecyclerView.layoutManager =
-                LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+            albumsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
+                //LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
             albumsRecyclerView.adapter = albumsRecyclerAdapter
 
             viewModel.albumsLiveData.observe(viewLifecycleOwner, {

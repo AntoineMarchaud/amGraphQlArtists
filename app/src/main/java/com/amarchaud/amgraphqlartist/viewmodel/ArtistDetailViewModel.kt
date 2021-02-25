@@ -21,6 +21,7 @@ import com.apollographql.apollo.exception.ApolloException
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
 
 //@HiltViewModel
 class ArtistDetailViewModel @AssistedInject constructor(
@@ -66,10 +67,16 @@ class ArtistDetailViewModel @AssistedInject constructor(
     var genderDetail: String? = null
 
     @Bindable
-    var ratingDetail: Double? = null
+    var ratingDetail: String? = null
 
     @Bindable
     var typeDetail: String? = null
+
+    @Bindable
+    var ratingBar: Float? = null
+
+    @Bindable
+    var reviews: Int? = null
 
 
     init {
@@ -108,7 +115,7 @@ class ArtistDetailViewModel @AssistedInject constructor(
                 null
             }
 
-            if(response == null) {
+            if (response == null) {
                 loadingGeneral = false
                 notifyPropertyChanged(BR.loadingGeneral)
 
@@ -137,9 +144,11 @@ class ArtistDetailViewModel @AssistedInject constructor(
                     // new details
                     countryCodeDetail = it.country()
                     genderDetail = it.gender()
-                    ratingDetail = it.rating()?.value() // rating of the artist
                     typeDetail = it.type() // group or solo
                     countryDetail = it.area()?.name() // name of the country
+                    ratingDetail = formatRatings(it)
+                    ratingBar = ratingBar(it)
+                    reviews = it.rating()?.voteCount()
                     notifyChange()
 
                     albumsLiveData.postValue(it.releaseGroups()?.nodes())
@@ -173,6 +182,14 @@ class ArtistDetailViewModel @AssistedInject constructor(
                 }
             }
         }
+    }
+
+    private fun formatRatings(venueDetail: ArtistDetailsFragment): String {
+        return DecimalFormat("#.##").format(venueDetail.rating()?.value()?.div(2) ?: 0) ?: "0"
+    }
+
+    private fun ratingBar(artistDetailsFragment: ArtistDetailsFragment): Float {
+        return artistDetailsFragment.rating()?.value()?.div(2)?.toFloat() ?: 0f
     }
 
     fun onBookMarkedClick() {

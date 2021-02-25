@@ -41,7 +41,7 @@ class ArtistsViewModel @Inject constructor(
             loading = true
             notifyPropertyChanged(BR.loading)
 
-            currentArtistSearched?.let { s ->
+            currentArtistSearched.let { s ->
                 val response = try {
                     apolloClient.query(ArtistsQuery(s)).await()
                 } catch (e: ApolloException) {
