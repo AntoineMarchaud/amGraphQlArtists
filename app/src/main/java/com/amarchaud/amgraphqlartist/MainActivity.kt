@@ -43,6 +43,9 @@ class MainActivity : AppCompatActivity() {
         )
 
         with(binding) {
+
+            setSupportActionBar(toolbar)
+
             // if you want to control actionBar/bottomNav visibility
             navController.addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
@@ -56,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                setSupportActionBar(toolbar)
+
                 toolbar.setupWithNavController(navController, appBarConfiguration)
             }
 

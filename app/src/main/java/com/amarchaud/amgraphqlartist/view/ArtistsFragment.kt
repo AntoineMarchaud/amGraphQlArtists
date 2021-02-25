@@ -79,6 +79,8 @@ class ArtistsFragment : Fragment(), IArtistClickListener{
 
         with(binding) {
 
+            toggleEmptyState(true)
+
             savedInstanceState?.let {
                 val query = it.getString(SAVED_SEARCH)
                 query?.let { queryString ->
@@ -86,15 +88,58 @@ class ArtistsFragment : Fragment(), IArtistClickListener{
                 }
             }
 
+            mainSwipeRefresh.setOnRefreshListener {
+                if (viewModel.currentArtistSearched.isBlank()) {
+                    mainSwipeRefresh.isRefreshing = false
+                    return@setOnRefreshListener
+                }
+                viewModel.onRefresh()
+            }
+
             artistsRecyclerView.layoutManager =
                 LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
             artistsRecyclerView.adapter = artistsRecyclerAdapter
 
             viewModel.listOfArtistsLiveData.observe(viewLifecycleOwner, {
+
+                mainSwipeRefresh.isRefreshing = false
+
+                if (it.isEmpty()) {
+                    //set empty state
+                    toggleEmptyState(true)
+                } else {
+                    //update adapter with new results
+                    toggleEmptyState(false)
+                    artistsRecyclerAdapter.setArtist(it)
+
+                    /*
+                    viewModel.checkLocationResultsFavorites(this, it, object: MainScreenViewModel.LocationFavoriteChanged{
+                        override fun onFavoriteChangedStatus() {
+                            runOnUiThread {
+                                adapter.setLocationResults(it)
+                            }
+                        }
+                    })*/
+                }
+
                 artistsRecyclerAdapter.setArtist(it)
             })
         }
     }
+
+    private fun toggleEmptyState(state: Boolean) {
+        with(binding) {
+            if (state) {
+                mainSwipeRefresh.visibility = View.GONE
+                mainLocationsEmptyGlyph.visibility = View.VISIBLE
+
+            } else {
+                mainSwipeRefresh.visibility = View.VISIBLE
+                mainLocationsEmptyGlyph.visibility = View.GONE
+            }
+        }
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()

@@ -28,14 +28,14 @@ class ArtistsViewModel @Inject constructor(
         const val TAG = "ArtistsViewModel"
     }
 
-    var currentArtistSearched: String? = null
+    var currentArtistSearched: String = ""
 
     @Bindable
     var loading: Boolean = false
 
     var listOfArtistsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
 
-    fun onSearch() {
+    fun onRefresh() {
         viewModelScope.launch {
 
             loading = true
@@ -86,6 +86,7 @@ class ArtistsViewModel @Inject constructor(
 
     fun setSearchQuery(query: String) {
         currentArtistSearched = query
-        onSearch()
+        onRefresh()
     }
+
 }
