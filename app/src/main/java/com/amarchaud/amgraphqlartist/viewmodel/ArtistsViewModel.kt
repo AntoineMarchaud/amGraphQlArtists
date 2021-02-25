@@ -39,6 +39,9 @@ class ArtistsViewModel @Inject constructor(
     var listOfArtistsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
 
     fun onRefresh() {
+
+        lastCursor = null
+
         viewModelScope.launch {
 
             loading = true
