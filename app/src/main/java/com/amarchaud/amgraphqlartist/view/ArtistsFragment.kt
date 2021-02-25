@@ -111,15 +111,6 @@ class ArtistsFragment : Fragment(), IArtistClickListener{
                     //update adapter with new results
                     toggleEmptyState(false)
                     artistsRecyclerAdapter.setArtist(it)
-
-                    /*
-                    viewModel.checkLocationResultsFavorites(this, it, object: MainScreenViewModel.LocationFavoriteChanged{
-                        override fun onFavoriteChangedStatus() {
-                            runOnUiThread {
-                                adapter.setLocationResults(it)
-                            }
-                        }
-                    })*/
                 }
 
                 artistsRecyclerAdapter.setArtist(it)
