@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class ArtistsFragment : Fragment(), IArtistClickListener{
+class ArtistsFragment : Fragment(), IArtistClickListener {
 
     companion object {
         const val DEBOUNCE_DELAY = 500L // in milli
@@ -115,7 +115,6 @@ class ArtistsFragment : Fragment(), IArtistClickListener{
                     //set empty state
                     toggleEmptyState(true)
                 } else {
-                    //update adapter with new results
                     toggleEmptyState(false)
                     artistsRecyclerAdapter.setArtist(it)
                 }

@@ -92,16 +92,13 @@ class ArtistsViewModel @Inject constructor(
 
     fun onNextRefresh() {
 
-        if (listOfArtistsLiveData.value.isNullOrEmpty()) {
+        if (listOfArtistsLiveData.value == null) {
             return
         }
 
-        if (listOfArtistsLiveData.value!!.size < 15) {
+        if (listOfArtistsLiveData.value!!.isEmpty() || listOfArtistsLiveData.value!!.size < 15 || lastCursor == null) {
             return
         }
-
-        if (lastCursor == null)
-            return
 
         viewModelScope.launch {
 
