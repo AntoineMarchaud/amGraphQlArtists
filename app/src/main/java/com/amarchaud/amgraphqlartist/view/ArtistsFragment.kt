@@ -119,8 +119,6 @@ class ArtistsFragment : Fragment(), IArtistClickListener{
                     toggleEmptyState(false)
                     artistsRecyclerAdapter.setArtist(it)
                 }
-
-                artistsRecyclerAdapter.setArtist(it)
             })
         }
     }
