@@ -55,19 +55,23 @@ class MainActivity : AppCompatActivity() {
                         bottomNav.visibility = View.VISIBLE
                     }
                 }
+
+                setSupportActionBar(toolbar)
+                toolbar.setupWithNavController(navController, appBarConfiguration)
             }
 
             // action bar
-            setupActionBarWithNavController(navController, appBarConfiguration)
+            //setupActionBarWithNavController(navController, appBarConfiguration)
 
             // bottom nav
             bottomNav.setupWithNavController(navController)
         }
     }
 
+    /*
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.my_first_host_fragment)
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
-    }
+    }*/
 }

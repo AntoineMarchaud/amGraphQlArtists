@@ -28,7 +28,6 @@ class ArtistsViewModel @Inject constructor(
         const val TAG = "ArtistsViewModel"
     }
 
-    @Bindable
     var currentArtistSearched: String? = null
 
     @Bindable
@@ -84,8 +83,9 @@ class ArtistsViewModel @Inject constructor(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-    }
 
+    fun setSearchQuery(query: String) {
+        currentArtistSearched = query
+        onSearch()
+    }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -12,7 +13,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/unknown"/>
+        app:srcCompat="@drawable/unknown"
+        tools:srcCompat="@tools:sample/avatars" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -43,17 +45,20 @@
         android:layout_height="wrap_content"
         android:text="@string/ArtistDetail"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/isBookMarked"
+        app:layout_constraintRight_toLeftOf="@+id/artist_bookmark"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/isBookMarked"
+    <CheckBox
+        android:id="@+id/artist_bookmark"
+        style="?android:attr/starStyle"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginEnd="16dp"
+        android:src="@drawable/star_circle_disabled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/white_star"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,6 +9,7 @@ import com.amarchaud.amgraphqlartist.base.BaseViewModel
 import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
 import com.amarchaud.estats.model.database.AppDao
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,6 +34,13 @@ class BookmarksViewModel @Inject constructor(
 
             loading = false
             notifyPropertyChanged(BR.loading)
+        }
+    }
+
+
+    fun refresh() {
+        viewModelScope.launch {
+            artistsBookmarkedLiveData.postValue(myDao.getAllBookmarks())
         }
     }
 }

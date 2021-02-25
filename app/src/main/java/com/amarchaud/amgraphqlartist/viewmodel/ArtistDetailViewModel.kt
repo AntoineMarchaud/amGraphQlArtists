@@ -83,11 +83,11 @@ class ArtistDetailViewModel @AssistedInject constructor(
     var artistsRelationshipsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
     var albumsLiveData: MutableLiveData<List<ArtistDetailsFragment.Node>> = MutableLiveData()
 
-    var isArtistInDatabase: MutableLiveData<Boolean> = MutableLiveData()
+    var isArtistInBookMarkedDb: MutableLiveData<Boolean> = MutableLiveData()
 
     init {
         viewModelScope.launch {
-            isArtistInDatabase.postValue(myDao.getOneBookmark(artist.id) != null)
+            isArtistInBookMarkedDb.postValue(myDao.getOneBookmark(artist.id) != null)
         }
     }
 
@@ -176,15 +176,14 @@ class ArtistDetailViewModel @AssistedInject constructor(
     }
 
     fun onBookMarkedClick() {
-
         viewModelScope.launch {
             val toDelete = myDao.getOneBookmark(artist.id)
             if (toDelete == null) {
                 myDao.insert(artist)
-                isArtistInDatabase.postValue(true)
+                isArtistInBookMarkedDb.postValue(true)
             } else {
                 myDao.delete(artist)
-                isArtistInDatabase.postValue(false)
+                isArtistInBookMarkedDb.postValue(false)
             }
         }
     }

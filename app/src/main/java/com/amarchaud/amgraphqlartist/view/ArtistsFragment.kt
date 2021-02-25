@@ -1,26 +1,38 @@
 package com.amarchaud.amgraphqlartist.view
 
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.text.SpannableStringBuilder
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.EditorInfo
+import androidx.annotation.UiThread
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
 import com.amarchaud.amgraphqlartist.databinding.FragmentArtistsBinding
 import com.amarchaud.amgraphqlartist.extensions.hideKeyboard
+import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
+import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
 import com.amarchaud.amgraphqlartist.viewmodel.ArtistsViewModel
 import com.amarchaud.estats.model.database.AppDao
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ArtistsFragment : Fragment() {
+class ArtistsFragment : Fragment(), IArtistClickListener{
 
     companion object {
+        const val DEBOUNCE_DELAY = 500L // in milli
         const val TAG = "ArtistFragment"
         const val SAVED_SEARCH = "SAVED_SEARCH"
     }
@@ -36,10 +48,16 @@ class ArtistsFragment : Fragment() {
     // recycler view
     private var artistsRecyclerAdapter = ArtistsAdapter(this)
 
+    private var mJobDebounce: Job? = null
+    private var mStoredQuery: String? = null
+    private var searchView: SearchView? = null // will be setted in onPrepareOptionsMenu
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
+        setHasOptionsMenu(true)
 
         artistsRecyclerAdapter.myDao = myDao
 
@@ -49,7 +67,7 @@ class ArtistsFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         _binding?.let {
-            outState.putString(SAVED_SEARCH, binding.currentArtist.text.toString())
+            outState.putString(SAVED_SEARCH, mStoredQuery)
         }
         super.onSaveInstanceState(outState)
     }
@@ -61,26 +79,11 @@ class ArtistsFragment : Fragment() {
 
         with(binding) {
 
-            if (savedInstanceState != null) {
-                savedInstanceState.getString(SAVED_SEARCH)?.let {
-                    currentArtist.text = SpannableStringBuilder(it)
+            savedInstanceState?.let {
+                val query = it.getString(SAVED_SEARCH)
+                query?.let { queryString ->
+                    viewModel.setSearchQuery(queryString)
                 }
-            }
-
-            currentArtist.setOnEditorActionListener { v, actionId, event ->
-                return@setOnEditorActionListener when (actionId) {
-                    EditorInfo.IME_ACTION_SEARCH -> {
-                        viewModel.onSearch()
-                        hideKeyboard()
-                        true
-                    }
-                    else -> false
-                }
-            }
-
-            searchButton.setOnClickListener {
-                viewModel.onSearch()
-                hideKeyboard()
             }
 
             artistsRecyclerView.layoutManager =
@@ -88,8 +91,7 @@ class ArtistsFragment : Fragment() {
             artistsRecyclerView.adapter = artistsRecyclerAdapter
 
             viewModel.listOfArtistsLiveData.observe(viewLifecycleOwner, {
-                artistsRecyclerAdapter.artists = it.toMutableList()
-                artistsRecyclerAdapter.notifyDataSetChanged()
+                artistsRecyclerAdapter.setArtist(it)
             })
         }
     }
@@ -97,5 +99,85 @@ class ArtistsFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    // *** Menu management
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_main, menu) // ajout de la loupe
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_item_location_search -> true
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+
+        menu.findItem(R.id.menu_item_location_search)?.let {
+            (it.actionView as? SearchView).let { searchView ->
+                searchView?.let { view ->
+
+                    this.searchView = searchView
+                    // to make sure it occupies the entire screen width as possible.
+                    view.maxWidth = Integer.MAX_VALUE
+
+                    // prepare a debounce to not call api all the time
+                    setupQueryInputWatcher(view)
+                }
+            }
+        }
+    }
+
+
+    private fun launchDebounce(query: String) = GlobalScope.launch {
+        delay(DEBOUNCE_DELAY)
+        viewModel.setSearchQuery(query)
+    }
+
+
+    @SuppressLint("CheckResult")
+    private fun setupQueryInputWatcher(searchView: SearchView) {
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                if (mStoredQuery != query) {
+                    mJobDebounce?.cancel()
+                    mJobDebounce = launchDebounce(query)
+                }
+                mStoredQuery = query
+                return true
+            }
+
+            override fun onQueryTextChange(query: String): Boolean {
+                if (mStoredQuery != query) {
+                    mJobDebounce?.cancel()
+                    mJobDebounce = launchDebounce(query)
+                }
+                mStoredQuery = query
+                return true
+            }
+        })
+    }
+
+    override fun onArtistClicked(artistEntity: ArtistEntity) {
+        findNavController().navigate(
+            ArtistsFragmentDirections.actionArtistsFragmentToArtistDetailFragment(
+                artistEntity
+            )
+        )
+    }
+
+    override fun onBookmarkClicked(artistEntity: ArtistEntity) {
+        GlobalScope.launch {
+            if (myDao.getOneBookmark(artistEntity.id) == null) {
+                myDao.insert(artistEntity)
+            } else {
+                myDao.delete(artistEntity)
+            }
+        }
     }
 }

@@ -1,6 +1,8 @@
 package com.amarchaud.amgraphqlartist.injection
 
 import com.apollographql.apollo.ApolloClient
+import com.apollographql.apollo.cache.normalized.lru.EvictionPolicy
+import com.apollographql.apollo.cache.normalized.lru.LruNormalizedCacheFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,26 +16,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class NetworkModule {
 
-    /*
-    private class AuthorizationInterceptor : Interceptor {
-        override fun intercept(chain: Interceptor.Chain): Response {
-            val request = chain.request().newBuilder()
-                .addHeader("Accept-Encoding", "gzip, deflate, br")
-                .build()
-
-            return chain.proceed(request)
-        }
-    }*/
-
     @Singleton
     @Provides
     fun provideApolloInterface(): ApolloClient =
         ApolloClient.builder()
             .serverUrl("https://graphbrainz.herokuapp.com/")
-                /*
-            .okHttpClient(OkHttpClient.Builder()
-                .addInterceptor(AuthorizationInterceptor())
-                .build()
-            )*/
             .build()
 }

@@ -4,27 +4,23 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
+import androidx.annotation.UiThread
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.databinding.ItemArtistBinding
+import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
 import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
-import com.amarchaud.amgraphqlartist.view.ArtistsFragment
-import com.amarchaud.amgraphqlartist.view.ArtistsFragmentDirections
-import com.amarchaud.amgraphqlartist.view.BookmarksFragment
-import com.amarchaud.amgraphqlartist.view.BookmarksFragmentDirections
 import com.amarchaud.estats.model.database.AppDao
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 
-class ArtistsAdapter(private val fragment: Fragment) :
+class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
     RecyclerView.Adapter<ArtistsAdapter.ArtistViewHolder>() {
 
-    var artists: MutableList<ArtistEntity> = mutableListOf()
+    private var artists: List<ArtistEntity> = ArrayList()
     var myDao: AppDao? = null
 
     override fun onCreateViewHolder(
@@ -36,18 +32,15 @@ class ArtistsAdapter(private val fragment: Fragment) :
     }
 
     override fun onBindViewHolder(holder: ArtistsAdapter.ArtistViewHolder, position: Int) {
-
-        //val positionInList: Int = position % artists.size
-
+        val context = holder.itemView.context
         with(artists[position]) {
 
             holder.binding.artistName.text = name
             holder.binding.artistDisambiguation.text = disambiguation
 
             photoUrl?.let { url ->
-
                 try {
-                    Glide.with(fragment.requireContext())
+                    Glide.with(context)
                         .load(Uri.parse(url))
                         .error(R.drawable.unknown)
                         .into(holder.binding.artistImage)
@@ -56,96 +49,12 @@ class ArtistsAdapter(private val fragment: Fragment) :
                 }
             }
 
-            if (myDao == null) {
-                holder.binding.isBookMarked.visibility = View.INVISIBLE
-                holder.binding.isBookMarked.isEnabled = false
-            } else {
-                GlobalScope.launch {
-                    val r = if (myDao!!.getOneBookmark(this@with.id) != null) {
-                        R.drawable.yellow_star
-                    } else {
-                        R.drawable.white_star
-                    }
-
-                    fragment.requireActivity().runOnUiThread {
-                        holder.binding.isBookMarked.setImageResource(r)
-                    }
-                }
-            }
-
-
-            // manage Dao
-            holder.binding.isBookMarked.setOnClickListener {
-
-                if (myDao == null)
-                    return@setOnClickListener
-
-                when (fragment) {
-                    is ArtistsFragment -> {
-                        GlobalScope.launch {
-                            if (myDao!!.getOneBookmark(this@with.id) == null) {
-                                myDao!!.insert(this@with)
-
-                                fragment.requireActivity().runOnUiThread {
-                                    holder.binding.isBookMarked.setImageResource(R.drawable.yellow_star)
-                                }
-
-                            } else {
-                                myDao!!.delete(this@with)
-
-                                fragment.requireActivity().runOnUiThread {
-                                    holder.binding.isBookMarked.setImageResource(R.drawable.white_star)
-                                }
-                            }
-                        }
-                    }
-                    is BookmarksFragment -> {
-                        // display a warning popup !
-                        AlertDialog.Builder(fragment.requireContext())
-                            .setTitle(R.string.DeleteEntryTitle)
-                            .setMessage(R.string.DeleteEntryMessage)
-                            .setPositiveButton(android.R.string.ok) { dialog, which ->
-
-                                artists.removeAt(position)
-                                notifyItemRemoved(position)
-
-                                GlobalScope.launch {
-                                    myDao!!.delete(this@with)
-                                }
-                            }
-                            .setNegativeButton(android.R.string.cancel, null)
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show()
-                    }
-                    else -> {
-                        // do nothing
-                    }
-                }
-
-
-            }
+            //set the initial state of the favorites icon by checking if its a favorite in the database
+            setupFavoriteIndicator(holder.binding, this, onClickListener)
 
             // display details
             holder.binding.artistDetails.setOnClickListener {
-                when (fragment) {
-                    is ArtistsFragment -> {
-                        fragment.findNavController().navigate(
-                            ArtistsFragmentDirections.actionArtistsFragmentToArtistDetailFragment(
-                                artists[position]
-                            )
-                        )
-                    }
-                    is BookmarksFragment -> {
-                        fragment.findNavController().navigate(
-                            BookmarksFragmentDirections.actionBookmarksFragmentToArtistDetailFragment(
-                                artists[position]
-                            )
-                        )
-                    }
-                    else -> {
-                        // do nothing
-                    }
-                }
+                onClickListener.onArtistClicked(this)
             }
         }
     }
@@ -154,4 +63,72 @@ class ArtistsAdapter(private val fragment: Fragment) :
 
     inner class ArtistViewHolder(var binding: ItemArtistBinding) :
         RecyclerView.ViewHolder(binding.root)
+
+    fun setArtistWithoutRefresh(newArtists: List<ArtistEntity>) {
+        artists = newArtists
+    }
+
+    fun setArtist(newArtists: List<ArtistEntity>) {
+        if (newArtists.isNullOrEmpty()) {
+            artists = newArtists
+            notifyDataSetChanged()
+            return
+        }
+
+        val diffResult = DiffUtil.calculateDiff(DiffCallback(this.artists, newArtists), true)
+
+        artists = newArtists
+
+        // This will notify the adapter of what is new data, and will animate/update it for you ("this" being the adapter)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    //set the initial state of the favorites icon by checking if its a favorite in the database
+    private fun setupFavoriteIndicator(
+        binding: ItemArtistBinding,
+        artist: ArtistEntity,
+        clickListener: IArtistClickListener
+    ) {
+
+        with(binding) {
+
+            artistBookmark.isChecked = false //set default
+
+            //set the views state based on what is in the database
+            GlobalScope.launch {
+                val exist = myDao?.getOneBookmark(artist.id)
+
+                @UiThread
+                artistBookmark.isChecked = (exist != null)
+            }
+
+            //handle the status changes for favorites when the user clicks the star
+            artistBookmark.setOnClickListener {
+                clickListener.onBookmarkClicked(artist)
+            }
+        }
+
+    }
+
+    open class DiffCallback(
+        private val oldList: List<ArtistEntity>,
+        private val newList: List<ArtistEntity>
+    ) : DiffUtil.Callback() {
+
+        override fun getOldListSize(): Int {
+            return oldList.size
+        }
+
+        override fun getNewListSize(): Int {
+            return newList.size
+        }
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].areItemsSame(newList[newItemPosition])
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].areContentsSame(newList[newItemPosition])
+        }
+    }
 }

@@ -15,4 +15,5 @@
     <string name="DeleteEntryMessage">Are you sure you want to delete this entry?</string>
     <!-- other -->
     <string name="GraphQlError">GraphQlError</string>
+    <string name="search_locations">Search Locations</string>
 </resources>

@@ -8,21 +8,25 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.adapter.AlbumsAdapter
 import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
 import com.amarchaud.amgraphqlartist.databinding.FragmentArtistDetailBinding
+import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
+import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
 import com.amarchaud.amgraphqlartist.viewmodel.ArtistDetailViewModel
 import com.amarchaud.amgraphqlartist.viewmodel.data.ArtistToDeleteViewModel
 import com.amarchaud.estats.model.database.AppDao
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ArtistDetailFragment : Fragment() {
+class ArtistDetailFragment : Fragment(), IArtistClickListener {
 
 
     companion object {
@@ -49,7 +53,7 @@ class ArtistDetailFragment : Fragment() {
 
     // recycler view
     private var albumsRecyclerAdapter = AlbumsAdapter(this)
-    private var artistsRecyclerAdapter = ArtistsAdapter(this)
+    private var relationShipsRecyclerAdapter = ArtistsAdapter(this)
 
     // special viewModel
     private val artistToDeleteViewModel: ArtistToDeleteViewModel by activityViewModels()
@@ -59,7 +63,7 @@ class ArtistDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        artistsRecyclerAdapter.myDao = myDao
+        relationShipsRecyclerAdapter.myDao = myDao
 
         _binding = FragmentArtistDetailBinding.inflate(inflater)
         return binding.root
@@ -75,12 +79,18 @@ class ArtistDetailFragment : Fragment() {
             commonDetails.artistDetails.isEnabled = false
             commonDetails.artistDetails.visibility = View.INVISIBLE
 
-            commonDetails.isBookMarked.setOnClickListener {
+            commonDetails.artistBookmark.setOnClickListener {
                 viewModel.onBookMarkedClick()
             }
-            viewModel.isArtistInDatabase.observe(viewLifecycleOwner, {
-                commonDetails.isBookMarked.setImageResource(if (it) R.drawable.yellow_star else R.drawable.white_star)
-            })
+
+            // check box init state
+            lifecycleScope.launch {
+                val exist = myDao.getOneBookmark(args.artist.id) != null
+                requireActivity().runOnUiThread {
+                    commonDetails.artistBookmark.isChecked = exist
+                }
+            }
+
 
             viewModel.nameLiveData.observe(viewLifecycleOwner, {
                 commonDetails.artistName.text = it
@@ -113,11 +123,10 @@ class ArtistDetailFragment : Fragment() {
 
             artistsRecyclerView.layoutManager =
                 LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
-            artistsRecyclerView.adapter = artistsRecyclerAdapter
+            artistsRecyclerView.adapter = relationShipsRecyclerAdapter
 
             viewModel.artistsRelationshipsLiveData.observe(viewLifecycleOwner, {
-                artistsRecyclerAdapter.artists = it.toMutableList()
-                artistsRecyclerAdapter.notifyDataSetChanged()
+                relationShipsRecyclerAdapter.setArtist(it)
             })
         }
     }
@@ -127,10 +136,22 @@ class ArtistDetailFragment : Fragment() {
         _binding = null
 
         // send event to listener (in our case : previous Fragment)
-        if(viewModel.isArtistInDatabase.value != true) {
+        if(viewModel.isArtistInBookMarkedDb.value != true) {
             artistToDeleteViewModel.artistToDeleteLiveData.postValue(ArtistToDeleteViewModel.ArtistToDelete(args.artist))
         } else {
             artistToDeleteViewModel.artistToDeleteLiveData.postValue(null)
         }
+    }
+
+
+    /**
+     * Management relationship here
+     */
+    override fun onArtistClicked(artistEntity: ArtistEntity) {
+        // no details here
+    }
+
+    override fun onBookmarkClicked(artistEntity: ArtistEntity) {
+        // impossible
     }
 }

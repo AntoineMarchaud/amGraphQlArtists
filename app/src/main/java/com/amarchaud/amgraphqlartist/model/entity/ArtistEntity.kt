@@ -16,4 +16,18 @@ data class ArtistEntity(
     @ColumnInfo(name = "name") @Nullable val name: String? = null,
     @ColumnInfo(name = "disambiguation") @Nullable val disambiguation: String? = null,
     @ColumnInfo(name = "photoUrl") @Nullable val photoUrl: String? = null
-) : Parcelable
+) : Parcelable {
+
+    fun areItemsSame(artistEntity: ArtistEntity): Boolean {
+        return true
+    }
+
+    fun areContentsSame(artistEntity: ArtistEntity): Boolean {
+        return id == artistEntity.id &&
+                name == artistEntity.name &&
+                disambiguation == artistEntity.disambiguation &&
+                photoUrl == artistEntity.photoUrl
+
+    }
+
+}
