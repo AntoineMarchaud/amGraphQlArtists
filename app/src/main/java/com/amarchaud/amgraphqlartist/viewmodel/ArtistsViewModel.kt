@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.amarchaud.amgraphqlartist.ArtistsFromQuery
 import com.amarchaud.amgraphqlartist.ArtistsQuery
 import com.amarchaud.amgraphqlartist.BR
 import com.amarchaud.amgraphqlartist.R
@@ -34,13 +33,15 @@ class ArtistsViewModel @Inject constructor(
     @Bindable
     var loading: Boolean = false
 
-    private var lastCursor: String? = null
 
     var listOfArtistsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
 
-    fun onRefresh() {
+    fun onRefresh(isNext: Boolean = false) {
 
-        lastCursor = null
+        if(isNext) {
+            if(listOfArtistsLiveData.value.isNullOrEmpty() || listOfArtistsLiveData.value!!.size < 15 || listOfArtistsLiveData.value!!.last().cursor == null)
+                return
+        }
 
         viewModelScope.launch {
 
@@ -49,7 +50,18 @@ class ArtistsViewModel @Inject constructor(
 
             currentArtistSearched.let { s ->
                 val response = try {
-                    apolloClient.query(ArtistsQuery(s)).await()
+
+                    val after = if (isNext) {
+                        if (listOfArtistsLiveData.value.isNullOrEmpty()) {
+                            null
+                        } else {
+                            listOfArtistsLiveData.value!!.last().cursor
+                        }
+                    } else {
+                        null
+                    }
+
+                    apolloClient.query(ArtistsQuery(s, after ?: "")).await()
                 } catch (e: ApolloException) {
                     Log.d(TAG, "Failure", e)
                     null
@@ -63,27 +75,37 @@ class ArtistsViewModel @Inject constructor(
 
                 } else {
 
-                    val listArtists = mutableListOf<ArtistEntity>()
-
-                    response.data?.search()?.artists()?.nodes()?.forEach { node ->
-
-                        with(node.fragments().artistBasicFragment()) {
-
-                            val imageUrl: String? =
-                                if (fanArt()?.backgrounds()?.size!! > 0) {
-                                    fanArt()?.backgrounds()?.get(0)?.url()
-                                        .toString()
-                                } else {
-                                    null
-                                }
-
-
-                            listArtists.add(ArtistEntity(id(), name(), disambiguation(), imageUrl))
-                        }
+                    val listArtists = if(isNext) {
+                        listOfArtistsLiveData.value!!.toMutableList()
+                    } else {
+                        mutableListOf()
                     }
 
-                    lastCursor = response.data?.search()?.artists()?.edges()?.lastOrNull()?.cursor()
+                    response.data?.search()?.artists()?.edges()?.forEach { edge ->
 
+                        val artist = ArtistEntity("")
+                        artist.cursor = edge.cursor()
+
+                        edge.node()?.let { node ->
+                            with(node.fragments().artistBasicFragment()) {
+
+                                val imageUrl: String? =
+                                    if (fanArt()?.backgrounds()?.size!! > 0) {
+                                        fanArt()?.backgrounds()?.get(0)?.url()
+                                            .toString()
+                                    } else {
+                                        null
+                                    }
+
+                                artist.id = id()
+                                artist.name = name()
+                                artist.disambiguation = disambiguation()
+                                artist.photoUrl = imageUrl
+                            }
+                        }
+
+                        listArtists.add(artist)
+                    }
                     listOfArtistsLiveData.postValue(listArtists)
                 }
             }
@@ -91,73 +113,6 @@ class ArtistsViewModel @Inject constructor(
             loading = false
             notifyPropertyChanged(BR.loading)
         }
-    }
-
-    fun onNextRefresh() {
-
-        if (listOfArtistsLiveData.value == null) {
-            return
-        }
-
-        if (listOfArtistsLiveData.value!!.isEmpty() || listOfArtistsLiveData.value!!.size < 15 || lastCursor == null) {
-            return
-        }
-
-        viewModelScope.launch {
-
-            loading = true
-            notifyPropertyChanged(BR.loading)
-
-            currentArtistSearched.let { s ->
-                val response = try {
-                    apolloClient.query(
-                        ArtistsFromQuery(
-                            s,
-                            lastCursor!!
-                        )
-                    ).await()
-                } catch (e: ApolloException) {
-                    Log.d(TAG, "Failure", e)
-                    null
-                }
-
-                if (response == null) {
-                    loading = false
-                    notifyPropertyChanged(BR.loading)
-
-                    Toast.makeText(app, R.string.GraphQlError, Toast.LENGTH_LONG).show()
-
-                } else {
-
-                    val listArtists =
-                        listOfArtistsLiveData.value?.toMutableList() ?: mutableListOf()
-
-                    response.data?.search()?.artists()?.nodes()?.filterNotNull()?.forEach { node ->
-
-                        with(node.fragments().artistBasicFragment()) {
-
-                            val imageUrl: String? =
-                                if (fanArt()?.backgrounds()?.size!! > 0) {
-                                    fanArt()?.backgrounds()?.get(0)?.url()
-                                        .toString()
-                                } else {
-                                    null
-                                }
-
-                            listArtists.add(ArtistEntity(id(), name(), disambiguation(), imageUrl))
-                        }
-                    }
-
-                    lastCursor = response.data?.search()?.artists()?.edges()?.lastOrNull()?.cursor()
-
-                    listOfArtistsLiveData.postValue(listArtists)
-                }
-            }
-
-            loading = false
-            notifyPropertyChanged(BR.loading)
-        }
-
     }
 
 

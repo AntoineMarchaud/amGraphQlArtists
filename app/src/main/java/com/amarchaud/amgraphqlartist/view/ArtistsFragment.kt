@@ -102,7 +102,7 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
                     if (!recyclerView.canScrollVertically(1)) {
                         // bottom of the list !
                         // call next artists
-                        viewModel.onNextRefresh()
+                        viewModel.onRefresh(true)
                     }
                 }
             })

@@ -11,11 +11,12 @@ import javax.annotation.Nullable
 @Parcelize
 @Entity(tableName = "BookMarks")
 data class ArtistEntity(
-    @PrimaryKey @ColumnInfo(name = "id") @NonNull val id: String,
+    @PrimaryKey @ColumnInfo(name = "id") @NonNull var id: String,
     //@ColumnInfo(name = "mbid") @Nullable val mbid: String? = null,
-    @ColumnInfo(name = "name") @Nullable val name: String? = null,
-    @ColumnInfo(name = "disambiguation") @Nullable val disambiguation: String? = null,
-    @ColumnInfo(name = "photoUrl") @Nullable val photoUrl: String? = null
+    @ColumnInfo(name = "name") @Nullable var name: String? = null,
+    @ColumnInfo(name = "disambiguation") @Nullable var disambiguation: String? = null,
+    @ColumnInfo(name = "photoUrl") @Nullable var photoUrl: String? = null,
+    @ColumnInfo(name = "cursor") @Nullable var cursor : String? = null
 ) : Parcelable {
 
     fun areItemsSame(artistEntity: ArtistEntity): Boolean {
