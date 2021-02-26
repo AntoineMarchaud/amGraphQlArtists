@@ -53,7 +53,7 @@ class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
             setupFavoriteIndicator(holder.binding, this, onClickListener)
 
             // display details
-            holder.binding.artistDetails.setOnClickListener {
+            holder.itemView.setOnClickListener {
                 onClickListener.onArtistClicked(this)
             }
         }

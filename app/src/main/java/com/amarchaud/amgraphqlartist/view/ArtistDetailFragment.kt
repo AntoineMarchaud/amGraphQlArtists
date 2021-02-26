@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -22,6 +24,7 @@ import com.amarchaud.amgraphqlartist.viewmodel.ArtistDetailViewModel
 import com.amarchaud.amgraphqlartist.viewmodel.data.ArtistToDeleteViewModel
 import com.amarchaud.estats.model.database.AppDao
 import com.bumptech.glide.Glide
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -77,12 +80,42 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
 
         with(binding) {
 
-            commonDetails.artistDetails.isEnabled = false
-            commonDetails.artistDetails.visibility = View.INVISIBLE
+            commonDetails.artistBookmark.isVisible = false
 
-            commonDetails.artistBookmark.setOnClickListener {
+            //colorize the favorites based on if this location has been favorited by the user
+            detailsIsFavorite.visibility = View.INVISIBLE
+
+            // init Favorite image
+            lifecycleScope.launch {
+                val favorite = myDao.getOneBookmark(args.artist.id)
+                val isFavorite = favorite != null && favorite.id == args.artist.id
+
+                requireActivity().runOnUiThread {
+                    detailsIsFavorite.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            if (isFavorite) R.drawable.star_circle else R.drawable.star_circle_disabled
+                        )
+                    )
+                    detailsIsFavorite.visibility = View.VISIBLE
+                }
+            }
+
+            detailsIsFavorite.setOnClickListener {
                 viewModel.onBookMarkedClick()
             }
+
+            viewModel.isArtistInBookMarkedDb.observe(viewLifecycleOwner, {
+                requireActivity().runOnUiThread {
+                    detailsIsFavorite.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            if (it) R.drawable.star_circle else R.drawable.star_circle_disabled
+                        )
+                    )
+                    detailsIsFavorite.visibility = View.VISIBLE
+                }
+            })
 
             // check box init state
             lifecycleScope.launch {
@@ -113,7 +146,7 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
             // **************** Recycler View management
 
             albumsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
-                //LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+            //LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
             albumsRecyclerView.adapter = albumsRecyclerAdapter
 
             viewModel.albumsLiveData.observe(viewLifecycleOwner, {
@@ -129,6 +162,7 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
             viewModel.artistsRelationshipsLiveData.observe(viewLifecycleOwner, {
                 relationShipsRecyclerAdapter.setArtist(it)
             })
+
         }
     }
 
@@ -137,8 +171,12 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
         _binding = null
 
         // send event to listener (in our case : previous Fragment)
-        if(viewModel.isArtistInBookMarkedDb.value != true) {
-            artistToDeleteViewModel.artistToDeleteLiveData.postValue(ArtistToDeleteViewModel.ArtistToDelete(args.artist))
+        if (viewModel.isArtistInBookMarkedDb.value != true) {
+            artistToDeleteViewModel.artistToDeleteLiveData.postValue(
+                ArtistToDeleteViewModel.ArtistToDelete(
+                    args.artist
+                )
+            )
         } else {
             artistToDeleteViewModel.artistToDeleteLiveData.postValue(null)
         }

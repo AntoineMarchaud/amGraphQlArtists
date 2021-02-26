@@ -30,8 +30,7 @@
                 app:contentScrim="?attr/colorPrimary"
                 app:expandedTitleGravity="top"
                 app:layout_scrollFlags="scroll|enterAlwaysCollapsed|exitUntilCollapsed|snap"
-                app:statusBarScrim="?attr/colorPrimary"
-                app:titleEnabled="false">
+                app:statusBarScrim="?attr/colorPrimary">
 
                 <include
                     android:id="@+id/commonDetails"
@@ -154,6 +153,18 @@
                     app:layout_constraintStart_toEndOf="@id/details_rating_bar"
                     app:layout_constraintTop_toTopOf="@+id/rating"
                     tools:text="(416)" />
+
+                <ImageView
+                    android:id="@+id/details_is_favorite"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/star_circle_disabled"
+                    app:layout_constrainedWidth="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/guideline_half_screen"
+                    tools:visibility="visible" />
 
 
                 <TextView

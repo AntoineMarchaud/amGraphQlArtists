@@ -19,10 +19,12 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/artistImage"
-        app:layout_constraintRight_toLeftOf="@+id/artistDetails"
+        app:layout_constraintRight_toLeftOf="@+id/artist_bookmark"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -39,23 +41,15 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/artistDetails"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/ArtistDetail"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/artist_bookmark"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <CheckBox
         android:id="@+id/artist_bookmark"
         style="?android:attr/starStyle"
-        android:clickable="true"
-        android:focusable="true"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginEnd="16dp"
+        android:clickable="true"
+        android:focusable="true"
         android:src="@drawable/star_circle_disabled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
