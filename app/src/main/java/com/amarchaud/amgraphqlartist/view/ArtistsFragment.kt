@@ -80,7 +80,7 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
             savedInstanceState?.let {
                 val query = it.getString(SAVED_SEARCH)
                 query?.let { queryString ->
-                    viewModel.setSearchQuery(queryString)
+                    setSearchQuery(queryString)
                 }
             }
 
@@ -89,7 +89,7 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
                     mainSwipeRefresh.isRefreshing = false
                     return@setOnRefreshListener
                 }
-                viewModel.onRefresh()
+                setSearchQuery(viewModel.currentArtistSearched)
             }
 
             artistsRecyclerView.layoutManager =
@@ -102,6 +102,7 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
                     if (!recyclerView.canScrollVertically(1)) {
                         // bottom of the list !
                         // call next artists
+                        mainSwipeRefresh.isRefreshing = true
                         viewModel.onRefresh(true)
                     }
                 }
@@ -172,10 +173,21 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
         }
     }
 
+    private fun setSearchQuery(query: String) {
+        requireActivity().runOnUiThread {
+            if (query.isBlank()) {
+                viewModel.setSearchQuery("")
+            } else {
+                binding.mainSwipeRefresh.isRefreshing = true
+                viewModel.setSearchQuery(query)
+            }
+        }
+    }
+
 
     private fun launchDebounce(query: String) = GlobalScope.launch {
         delay(DEBOUNCE_DELAY)
-        viewModel.setSearchQuery(query)
+        setSearchQuery(query)
     }
 
 

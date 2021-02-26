@@ -30,13 +30,15 @@ class ArtistsViewModel @Inject constructor(
 
     var currentArtistSearched: String = ""
 
-    @Bindable
-    var loading: Boolean = false
-
-
     var listOfArtistsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
 
     fun onRefresh(isNext: Boolean = false) {
+
+        if (currentArtistSearched.isBlank()) {
+            Log.d(TAG, "Query empty so no request will be made")
+            listOfArtistsLiveData.postValue(ArrayList())
+            return
+        }
 
         if(isNext) {
             if(listOfArtistsLiveData.value.isNullOrEmpty() || listOfArtistsLiveData.value!!.size < 15 || listOfArtistsLiveData.value!!.last().cursor == null)
@@ -44,9 +46,6 @@ class ArtistsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-
-            loading = true
-            notifyPropertyChanged(BR.loading)
 
             currentArtistSearched.let { s ->
                 val response = try {
@@ -69,8 +68,7 @@ class ArtistsViewModel @Inject constructor(
                 }
 
                 if (response == null) {
-                    loading = false
-                    notifyPropertyChanged(BR.loading)
+                    return@launch
                 } else {
 
                     val listArtists = if(isNext) {
@@ -107,9 +105,6 @@ class ArtistsViewModel @Inject constructor(
                     listOfArtistsLiveData.postValue(listArtists)
                 }
             }
-
-            loading = false
-            notifyPropertyChanged(BR.loading)
         }
     }
 
