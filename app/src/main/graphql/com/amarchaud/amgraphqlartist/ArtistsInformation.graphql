@@ -42,7 +42,6 @@ fragment ArtistDetailsFragment on Artist {
         }
     }
     relationships {
-        __typename
         artists {
             nodes {
                 target {
