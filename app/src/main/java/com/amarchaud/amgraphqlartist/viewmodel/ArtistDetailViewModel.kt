@@ -112,6 +112,7 @@ class ArtistDetailViewModel @AssistedInject constructor(
                 apolloClient.query(ArtistQuery(artist.id)).await()
             } catch (e: ApolloException) {
                 Log.d(TAG, "Failure", e)
+                Toast.makeText(app, e.message, Toast.LENGTH_LONG).show()
                 null
             }
 
@@ -121,8 +122,6 @@ class ArtistDetailViewModel @AssistedInject constructor(
 
                 loadingRelease = false
                 notifyPropertyChanged(BR.loadingRelease)
-
-                Toast.makeText(app, R.string.GraphQlError, Toast.LENGTH_LONG).show()
 
             } else {
 

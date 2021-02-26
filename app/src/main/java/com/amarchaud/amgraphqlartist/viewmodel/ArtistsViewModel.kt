@@ -64,15 +64,13 @@ class ArtistsViewModel @Inject constructor(
                     apolloClient.query(ArtistsQuery(s, after ?: "")).await()
                 } catch (e: ApolloException) {
                     Log.d(TAG, "Failure", e)
+                    Toast.makeText(app, e.message, Toast.LENGTH_LONG).show()
                     null
                 }
 
                 if (response == null) {
                     loading = false
                     notifyPropertyChanged(BR.loading)
-
-                    Toast.makeText(app, R.string.GraphQlError, Toast.LENGTH_LONG).show()
-
                 } else {
 
                     val listArtists = if(isNext) {
