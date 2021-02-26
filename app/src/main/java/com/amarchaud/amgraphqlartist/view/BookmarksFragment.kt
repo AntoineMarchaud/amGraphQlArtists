@@ -71,7 +71,7 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
 
             artistToDeleteViewModel.artistToDeleteLiveData.observe(viewLifecycleOwner, {
                 if (it != null) {
-                   viewModel.refresh()
+                    viewModel.refresh()
                 }
             })
         }
@@ -108,7 +108,16 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
                     }
                 }
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(android.R.string.cancel) { dialog, which ->
+                lifecycleScope.launch {
+                    val pos = myDao.getAllBookmarks().indexOf(artistEntity)
+                    if (pos >= 0) {
+                        requireActivity().runOnUiThread {
+                            artistsRecyclerAdapter.notifyItemChanged(pos)
+                        }
+                    }
+                }
+            }
             .setIcon(android.R.drawable.ic_dialog_alert)
             .show()
     }
