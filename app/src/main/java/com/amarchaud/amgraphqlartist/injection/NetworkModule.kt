@@ -2,6 +2,7 @@ package com.amarchaud.amgraphqlartist.injection
 
 
 import android.content.Context
+import com.apollographql.apollo.ApolloAndroidLogger
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.cache.http.ApolloHttpCache
 import com.apollographql.apollo.cache.http.DiskLruHttpCacheStore
@@ -25,6 +26,7 @@ class NetworkModule {
         const val size: Long = 1024 * 1024 * 10
     }
 
+
     // display log
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
@@ -47,6 +49,7 @@ class NetworkModule {
                     )
                 )
             )
+            .logger(ApolloAndroidLogger())
             .okHttpClient(okHttpClient)
             .build()
 }
