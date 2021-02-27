@@ -174,6 +174,9 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
     }
 
     private fun setSearchQuery(query: String) {
+
+        searchView?.setQuery(query, true)
+
         requireActivity().runOnUiThread {
             if (query.isBlank()) {
                 viewModel.setSearchQuery("")
