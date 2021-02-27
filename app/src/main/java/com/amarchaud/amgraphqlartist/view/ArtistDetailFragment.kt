@@ -90,22 +90,22 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                 val favorite = myDao.getOneBookmark(args.artist.id)
                 val isFavorite = favorite != null && favorite.id == args.artist.id
 
-                commonDetails.artistName.text = args.artist.name
-                commonDetails.artistDisambiguation.text = args.artist.disambiguation
-
-                args.artist.photoUrl?.let {
-                    try {
-                        Glide.with(requireContext())
-                            .load(Uri.parse(it))
-                            .error(R.drawable.unknown)
-                            .into(commonDetails.artistImage)
-                    } catch (e: IllegalArgumentException) {
-                        commonDetails.artistImage.setImageResource(R.drawable.unknown)
-                    }
-                }
-
-
                 requireActivity().runOnUiThread {
+                    
+                    commonDetails.artistName.text = args.artist.name
+                    commonDetails.artistDisambiguation.text = args.artist.disambiguation
+
+                    args.artist.photoUrl?.let {
+                        try {
+                            Glide.with(requireContext())
+                                .load(Uri.parse(it))
+                                .error(R.drawable.unknown)
+                                .into(commonDetails.artistImage)
+                        } catch (e: IllegalArgumentException) {
+                            commonDetails.artistImage.setImageResource(R.drawable.unknown)
+                        }
+                    }
+
                     detailsIsFavorite.setImageDrawable(
                         ContextCompat.getDrawable(
                             requireContext(),
