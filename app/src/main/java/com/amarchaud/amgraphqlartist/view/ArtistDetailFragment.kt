@@ -166,9 +166,11 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
             //LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
             albumsRecyclerView.adapter = albumsRecyclerAdapter
 
-            viewModel.albumsLiveData.observe(viewLifecycleOwner, {
-                albumsRecyclerAdapter.albums = it
-                albumsRecyclerAdapter.notifyDataSetChanged()
+            viewModel.albumsLiveData.observe(viewLifecycleOwner, { l ->
+                l?.let {
+                    albumsRecyclerAdapter.albums = l
+                    albumsRecyclerAdapter.notifyDataSetChanged()
+                }
             })
 
 

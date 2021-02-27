@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide
 class AlbumsAdapter(private val fragment: Fragment) :
     RecyclerView.Adapter<AlbumsAdapter.AlbumViewHolder>() {
 
-    var albums: List<ArtistDetailsFragment.Node> = mutableListOf()
+    var albums: List<ArtistDetailsFragment.Node?> = mutableListOf()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -27,10 +27,13 @@ class AlbumsAdapter(private val fragment: Fragment) :
 
         with(albums[position]) {
 
-            holder.binding.albumName.text = title()
+            if(this == null)
+                return
+
+            holder.binding.albumName.text = title
             holder.binding.ratingBar.rating = ratingBar(this)
 
-            coverArtArchive()?.front()?.let {
+            coverArtArchive?.front?.let {
                 try {
                     Glide.with(fragment.requireContext())
                         .load(Uri.parse(it.toString()))
@@ -50,7 +53,7 @@ class AlbumsAdapter(private val fragment: Fragment) :
         RecyclerView.ViewHolder(binding.root)
 
     private fun ratingBar(artistDetailsFragment: ArtistDetailsFragment.Node): Float {
-        return artistDetailsFragment.rating()?.value()?.div(2)?.toFloat() ?: 0f
+        return artistDetailsFragment.rating?.value?.div(2)?.toFloat() ?: 0f
     }
 
 }

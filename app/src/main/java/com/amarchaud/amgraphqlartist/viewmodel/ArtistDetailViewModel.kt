@@ -88,7 +88,7 @@ class ArtistDetailViewModel @AssistedInject constructor(
     var photoUrlLiveData: MutableLiveData<String> = MutableLiveData()
 
     var artistsRelationshipsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
-    var albumsLiveData: MutableLiveData<List<ArtistDetailsFragment.Node>> = MutableLiveData()
+    var albumsLiveData: MutableLiveData<List<ArtistDetailsFragment.Node?>?> = MutableLiveData()
 
     var isArtistInBookMarkedDb: MutableLiveData<Boolean> = MutableLiveData()
 
@@ -125,52 +125,52 @@ class ArtistDetailViewModel @AssistedInject constructor(
 
             } else {
 
-                response.data?.node()?.fragments()?.artistDetailsFragment()?.let {
+                response.data?.node?.fragments?.artistDetailsFragment?.let {
 
                     // common details
-                    with(it.fragments().artistBasicFragment()) {
+                    with(it.fragments.artistBasicFragment) {
 
-                        nameLiveData.postValue(name())
-                        disambiguationLiveData.postValue(disambiguation())
+                        nameLiveData.postValue(name)
+                        disambiguationLiveData.postValue(disambiguation)
 
-                        if (fanArt()?.backgrounds()?.size!! > 0) {
+                        if (fanArt?.backgrounds?.size!! > 0) {
                             photoUrlLiveData.postValue(
-                                fanArt()?.backgrounds()?.get(0)?.url().toString()
+                                fanArt.backgrounds.get(0)?.url.toString()
                             )
                         }
                     }
 
                     // new details
-                    countryCodeDetail = it.country()
-                    genderDetail = it.gender()
-                    typeDetail = it.type() // group or solo
-                    countryDetail = it.area()?.name() // name of the country
+                    countryCodeDetail = it.country
+                    genderDetail = it.gender
+                    typeDetail = it.type // group or solo
+                    countryDetail = it.area?.name // name of the country
                     ratingDetail = formatRatings(it)
                     ratingBar = ratingBar(it)
-                    reviews = it.rating()?.voteCount()
+                    reviews = it.rating?.voteCount
                     notifyChange()
 
-                    albumsLiveData.postValue(it.releaseGroups()?.nodes())
+                    albumsLiveData.postValue(it.releaseGroups?.nodes)
 
                     loadingRelease = false
                     notifyPropertyChanged(BR.loadingRelease)
 
                     // TODO relationships is always NULL.... WHY ??????
                     val listArtists = mutableListOf<ArtistEntity>()
-                    it.relationships()?.artists()?.nodes()?.filterNotNull()?.forEach { node ->
-                        with(node.target().fragments().artistBasicFragment()) {
+                    it.relationships?.artists?.nodes?.filterNotNull()?.forEach { node ->
+                        with(node.target.fragments.artistBasicFragment) {
 
                             if (this == null)
                                 return@with
 
                             val imageUrl: String? =
-                                if (fanArt()?.backgrounds()?.size!! > 0) {
-                                    fanArt()?.backgrounds()?.get(0)?.url().toString()
+                                if (fanArt?.backgrounds?.size!! > 0) {
+                                    fanArt.backgrounds[0]?.url.toString()
                                 } else {
                                     null
                                 }
 
-                            listArtists.add(ArtistEntity(id(), name(), disambiguation(), imageUrl))
+                            listArtists.add(ArtistEntity(id, name, disambiguation, imageUrl))
                         }
                     }
 
@@ -184,11 +184,11 @@ class ArtistDetailViewModel @AssistedInject constructor(
     }
 
     private fun formatRatings(venueDetail: ArtistDetailsFragment): String {
-        return DecimalFormat("#.##").format(venueDetail.rating()?.value()?.div(2) ?: 0) ?: "0"
+        return DecimalFormat("#.##").format(venueDetail.rating?.value?.div(2) ?: 0) ?: "0"
     }
 
     private fun ratingBar(artistDetailsFragment: ArtistDetailsFragment): Float {
-        return artistDetailsFragment.rating()?.value()?.div(2)?.toFloat() ?: 0f
+        return artistDetailsFragment.rating?.value?.div(2)?.toFloat() ?: 0f
     }
 
     fun onBookMarkedClick() {

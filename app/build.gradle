@@ -4,8 +4,8 @@ plugins {
     id 'kotlin-kapt' // databinding
     id 'dagger.hilt.android.plugin'
     id 'androidx.navigation.safeargs.kotlin'
-    id 'com.apollographql.apollo'
     id 'kotlin-parcelize'
+    id("com.apollographql.apollo").version("$apollo_version")
 }
 
 android {
@@ -77,14 +77,15 @@ dependencies {
 
     // apollographql
     implementation "com.apollographql.apollo:apollo-runtime:$apollo_version"
-    // optional: if you want to use the normalized cache
-    implementation "com.apollographql.apollo:apollo-normalized-cache-sqlite:$apollo_version"
-    // optional: for coroutines support
     implementation "com.apollographql.apollo:apollo-coroutines-support:$apollo_version"
-    // optional: Most of apollo-android does not depend on Android in practice and runs on any JVM or on Kotlin native. apollo-android-support contains a few Android-only helper classes. For an example to send logs to logcat or run callbacks on the main thread.
-    implementation("com.apollographql.apollo:apollo-android-support:$apollo_version")
+    implementation "com.apollographql.apollo:apollo-http-cache:$apollo_version"
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
 
     // glide
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
+}
+
+apollo {
+    generateKotlinModels.set(true)
 }

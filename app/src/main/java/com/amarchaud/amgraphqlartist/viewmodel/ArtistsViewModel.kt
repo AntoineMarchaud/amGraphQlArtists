@@ -77,25 +77,26 @@ class ArtistsViewModel @Inject constructor(
                         mutableListOf()
                     }
 
-                    response.data?.search()?.artists()?.edges()?.forEach { edge ->
+                    response.data?.search?.artists?.edges?.forEach { edge ->
 
                         val artist = ArtistEntity("")
-                        artist.cursor = edge.cursor()
+                        artist.cursor = edge?.cursor
 
-                        edge.node()?.let { node ->
-                            with(node.fragments().artistBasicFragment()) {
+                        edge?.node?.let { node ->
+
+                            with(node.fragments.artistBasicFragment) {
 
                                 val imageUrl: String? =
-                                    if (fanArt()?.backgrounds()?.size!! > 0) {
-                                        fanArt()?.backgrounds()?.get(0)?.url()
+                                    if (fanArt?.backgrounds?.size!! > 0) {
+                                        fanArt.backgrounds[0]?.url
                                             .toString()
                                     } else {
                                         null
                                     }
 
-                                artist.id = id()
-                                artist.name = name()
-                                artist.disambiguation = disambiguation()
+                                artist.id = id
+                                artist.name = name
+                                artist.disambiguation = disambiguation
                                 artist.photoUrl = imageUrl
                             }
                         }
