@@ -3,18 +3,41 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp">
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/artistImage"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="16dp"
+    <androidx.cardview.widget.CardView
+        android:layout_marginStart="4dp"
+        android:id="@+id/artistImageLayout"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        app:cardCornerRadius="250dp"
+        app:cardBackgroundColor="@color/grey_disabled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/unknown"
-        tools:srcCompat="@tools:sample/avatars" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            app:cardBackgroundColor="@color/primary"
+            app:cardCornerRadius="250dp">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/artistImage"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:scaleType="centerCrop"
+                app:srcCompat="@drawable/unknown"
+                tools:srcCompat="@tools:sample/avatars" />
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.cardview.widget.CardView>
+
 
     <LinearLayout
         android:layout_width="0dp"
@@ -23,7 +46,7 @@
         android:layout_marginRight="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/artistImage"
+        app:layout_constraintLeft_toRightOf="@+id/artistImageLayout"
         app:layout_constraintRight_toLeftOf="@+id/artist_bookmark"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -45,8 +68,8 @@
     <CheckBox
         android:id="@+id/artist_bookmark"
         style="?android:attr/starStyle"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:clickable="true"
         android:focusable="true"
