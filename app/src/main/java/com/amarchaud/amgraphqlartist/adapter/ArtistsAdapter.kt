@@ -38,10 +38,12 @@ class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
             holder.binding.artistName.text = name
             holder.binding.artistDisambiguation.text = disambiguation
 
-            photoUrl?.let { url ->
+            if (photoUrl.isNullOrEmpty()) {
+                holder.binding.artistImage.setImageResource(R.drawable.unknown)
+            } else {
                 try {
                     Glide.with(context)
-                        .load(Uri.parse(url))
+                        .load(Uri.parse(photoUrl))
                         .error(R.drawable.unknown)
                         .into(holder.binding.artistImage)
                 } catch (e: IllegalArgumentException) {
