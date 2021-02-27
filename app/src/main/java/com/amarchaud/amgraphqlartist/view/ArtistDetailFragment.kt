@@ -90,6 +90,21 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                 val favorite = myDao.getOneBookmark(args.artist.id)
                 val isFavorite = favorite != null && favorite.id == args.artist.id
 
+                commonDetails.artistName.text = args.artist.name
+                commonDetails.artistDisambiguation.text = args.artist.disambiguation
+
+                args.artist.photoUrl?.let {
+                    try {
+                        Glide.with(requireContext())
+                            .load(Uri.parse(it))
+                            .error(R.drawable.unknown)
+                            .into(commonDetails.artistImage)
+                    } catch (e: IllegalArgumentException) {
+                        commonDetails.artistImage.setImageResource(R.drawable.unknown)
+                    }
+                }
+
+
                 requireActivity().runOnUiThread {
                     detailsIsFavorite.setImageDrawable(
                         ContextCompat.getDrawable(
@@ -126,6 +141,8 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
             }
 
 
+            /*
+            // useless, we have the artist by navArgs
             viewModel.nameLiveData.observe(viewLifecycleOwner, {
                 commonDetails.artistName.text = it
             })
@@ -136,13 +153,13 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
 
                 try {
                     Glide.with(requireContext())
-                        .load(Uri.parse(it))
+                        .load(it)
                         .error(R.drawable.unknown)
                         .into(commonDetails.artistImage)
                 } catch (e: IllegalArgumentException) {
                     commonDetails.artistImage.setImageResource(R.drawable.unknown)
                 }
-            })
+            })*/
             // **************** Recycler View management
 
             albumsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
