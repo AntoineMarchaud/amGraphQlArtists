@@ -99,10 +99,10 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                         try {
                             Glide.with(requireContext())
                                 .load(Uri.parse(it))
-                                .error(R.drawable.unknown)
+                                .error(R.drawable.ic_unknown)
                                 .into(commonDetails.artistImage)
                         } catch (e: IllegalArgumentException) {
-                            commonDetails.artistImage.setImageResource(R.drawable.unknown)
+                            commonDetails.artistImage.setImageResource(R.drawable.ic_unknown)
                         }
                     }
 
@@ -154,10 +154,10 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                 try {
                     Glide.with(requireContext())
                         .load(it)
-                        .error(R.drawable.unknown)
+                        .error(R.drawable.ic_unknown)
                         .into(commonDetails.artistImage)
                 } catch (e: IllegalArgumentException) {
-                    commonDetails.artistImage.setImageResource(R.drawable.unknown)
+                    commonDetails.artistImage.setImageResource(R.drawable.ic_unknown)
                 }
             })*/
             // **************** Recycler View management

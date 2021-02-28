@@ -37,10 +37,10 @@ class AlbumsAdapter(private val fragment: Fragment) :
                 try {
                     Glide.with(fragment.requireContext())
                         .load(Uri.parse(it.toString()))
-                        .error(R.drawable.unknown)
+                        .error(R.drawable.ic_unknown)
                         .into(holder.binding.albumImage)
                 } catch (e: IllegalArgumentException) {
-                    holder.binding.albumImage.setImageResource(R.drawable.unknown)
+                    holder.binding.albumImage.setImageResource(R.drawable.ic_unknown)
                 }
             }
 

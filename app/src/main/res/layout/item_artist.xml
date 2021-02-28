@@ -31,7 +31,7 @@
                 android:layout_height="50dp"
                 android:layout_gravity="center"
                 android:scaleType="centerCrop"
-                app:srcCompat="@drawable/unknown"
+                app:srcCompat="@drawable/ic_unknown"
                 tools:srcCompat="@tools:sample/avatars" />
 
         </androidx.cardview.widget.CardView>

@@ -14,10 +14,10 @@ object ImageViewBindingAdapterLoad {
             try {
                 Glide.with(view.context)
                     .load(Uri.parse(url))
-                    .error(R.drawable.unknown)
+                    .error(R.drawable.ic_unknown)
                     .into(view)
             } catch (e: IllegalArgumentException) {
-                view.setImageResource(R.drawable.unknown)
+                view.setImageResource(R.drawable.ic_unknown)
             }
         }
     }
@@ -29,10 +29,10 @@ object ImageViewBindingAdapterLoad {
             try {
                 Glide.with(view.context)
                     .load(uri)
-                    .error(R.drawable.unknown)
+                    .error(R.drawable.ic_unknown)
                     .into(view)
             } catch (e: IllegalArgumentException) {
-                view.setImageResource(R.drawable.unknown)
+                view.setImageResource(R.drawable.ic_unknown)
             }
         }
     }
