@@ -41,7 +41,7 @@
             android:id="@+id/main_locations_empty_glyph"
             android:layout_width="175dp"
             android:layout_height="175dp"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

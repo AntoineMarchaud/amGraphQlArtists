@@ -75,8 +75,6 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
 
         with(binding) {
 
-            toggleEmptyState(true)
-
             savedInstanceState?.let {
                 val query = it.getString(SAVED_SEARCH)
                 query?.let { queryString ->
