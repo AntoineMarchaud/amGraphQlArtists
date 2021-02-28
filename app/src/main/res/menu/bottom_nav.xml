@@ -3,9 +3,11 @@
     <item
         android:id="@+id/artistsFragment"
         android:contentDescription="@string/menu_artists_description"
+        android:icon="@drawable/ic_action_artist"
         android:title="@string/menu_artists_title" />
     <item
         android:id="@+id/bookmarksFragment"
         android:contentDescription="@string/menu_bookmarks_description"
-        android:title="@string/menu_bookmarks_title" />
+        android:title="@string/menu_bookmarks_title"
+        android:icon="@drawable/ic_action_bookmark"/>
 </menu>
