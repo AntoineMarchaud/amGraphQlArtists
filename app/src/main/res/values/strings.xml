@@ -16,4 +16,5 @@
     <!-- other -->
     <string name="GraphQlError">GraphQlError</string>
     <string name="search_locations">Search Locations</string>
+    <string name="search_glyph_text">No results to display</string>
 </resources>

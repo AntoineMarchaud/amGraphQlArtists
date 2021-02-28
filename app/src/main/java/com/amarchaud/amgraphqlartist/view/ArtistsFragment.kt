@@ -125,11 +125,11 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
         with(binding) {
             if (state) {
                 mainSwipeRefresh.visibility = View.GONE
-                mainLocationsEmptyGlyph.visibility = View.VISIBLE
+                groupEmptyData.visibility = View.VISIBLE
 
             } else {
                 mainSwipeRefresh.visibility = View.VISIBLE
-                mainLocationsEmptyGlyph.visibility = View.GONE
+                groupEmptyData.visibility = View.GONE
             }
         }
     }
