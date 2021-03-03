@@ -1,5 +1,6 @@
 package com.amarchaud.amgraphqlartist.adapter
 
+import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,9 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.databinding.ItemAlbumBinding
 import com.amarchaud.amgraphqlartist.fragment.ArtistDetailsFragment
+import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
 import com.bumptech.glide.Glide
 
-class AlbumsAdapter(private val fragment: Fragment) :
+class AlbumsAdapter(private val context : Context) :
     RecyclerView.Adapter<AlbumsAdapter.AlbumViewHolder>() {
 
     var albums: List<ArtistDetailsFragment.Node?> = mutableListOf()
@@ -35,7 +37,7 @@ class AlbumsAdapter(private val fragment: Fragment) :
 
             coverArtArchive?.front?.let {
                 try {
-                    Glide.with(fragment.requireContext())
+                    Glide.with(context)
                         .load(Uri.parse(it.toString()))
                         .error(R.drawable.ic_unknown)
                         .into(holder.binding.albumImage)
