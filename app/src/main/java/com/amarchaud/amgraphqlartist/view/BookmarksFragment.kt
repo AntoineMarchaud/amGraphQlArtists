@@ -15,13 +15,11 @@ import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
 import com.amarchaud.amgraphqlartist.databinding.FragmentBookmarksBinding
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
-import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
+import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.amarchaud.amgraphqlartist.viewmodel.BookmarksViewModel
 import com.amarchaud.amgraphqlartist.viewmodel.data.ArtistToDeleteViewModel
-import com.amarchaud.estats.model.database.AppDao
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class BookmarksFragment : Fragment(), IArtistClickListener {
@@ -35,9 +33,6 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
 
     private val viewModel: BookmarksViewModel by viewModels()
 
-    @Inject
-    lateinit var myDao: AppDao
-
     // recycler view
     private var artistsRecyclerAdapter = ArtistsAdapter(this)
 
@@ -48,9 +43,6 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        artistsRecyclerAdapter.myDao = myDao
-
         _binding = FragmentBookmarksBinding.inflate(inflater)
         return binding.root
     }
@@ -82,41 +74,26 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
         _binding = null
     }
 
-    override fun onArtistClicked(artistEntity: ArtistEntity) {
+    override fun onArtistClicked(artistApp: ArtistApp) {
         findNavController().navigate(
             BookmarksFragmentDirections.actionBookmarksFragmentToArtistDetailFragment(
-                artistEntity
+                artistApp
             )
         )
     }
 
-    override fun onBookmarkClicked(artistEntity: ArtistEntity) {
+    override fun onBookmarkClicked(artistApp: ArtistApp) {
 
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.DeleteEntryTitle)
             .setMessage(R.string.DeleteEntryMessage)
             .setPositiveButton(android.R.string.ok) { dialog, which ->
                 lifecycleScope.launch {
-                    val pos = myDao.getAllBookmarks().indexOf(artistEntity)
-                    if (pos >= 0) {
-                        myDao.deleteOneBookmark(artistEntity.id)
-                        artistsRecyclerAdapter.setArtistWithoutRefresh(myDao.getAllBookmarks())
-
-                        requireActivity().runOnUiThread {
-                            artistsRecyclerAdapter.notifyItemRemoved(pos)
-                        }
-                    }
+                    viewModel.deleteBookmark(artistApp)
                 }
             }
             .setNegativeButton(android.R.string.cancel) { dialog, which ->
-                lifecycleScope.launch {
-                    val pos = myDao.getAllBookmarks().indexOf(artistEntity)
-                    if (pos >= 0) {
-                        requireActivity().runOnUiThread {
-                            artistsRecyclerAdapter.notifyItemChanged(pos)
-                        }
-                    }
-                }
+                viewModel.refresh()
             }
             .setIcon(android.R.drawable.ic_dialog_alert)
             .show()

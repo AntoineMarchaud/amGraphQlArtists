@@ -3,14 +3,13 @@ package com.amarchaud.amgraphqlartist.viewmodel
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
-import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.amarchaud.amgraphqlartist.ArtistsQuery
-import com.amarchaud.amgraphqlartist.BR
-import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.base.BaseViewModel
+import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
+import com.amarchaud.estats.model.database.AppDao
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.coroutines.await
 import com.apollographql.apollo.exception.ApolloException
@@ -21,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ArtistsViewModel @Inject constructor(
     val app: Application,
-    private val apolloClient: ApolloClient
+    private val apolloClient: ApolloClient,
+    private val myDao: AppDao
 ) : BaseViewModel(app) {
 
     companion object {
@@ -30,7 +30,7 @@ class ArtistsViewModel @Inject constructor(
 
     var currentArtistSearched: String = ""
 
-    var listOfArtistsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
+    var listOfArtistsLiveData: MutableLiveData<List<ArtistApp>> = MutableLiveData()
 
     fun onRefresh(isNext: Boolean = false) {
 
@@ -78,30 +78,7 @@ class ArtistsViewModel @Inject constructor(
                     }
 
                     response.data?.search?.artists?.edges?.forEach { edge ->
-
-                        val artist = ArtistEntity("")
-                        artist.cursor = edge?.cursor
-
-                        edge?.node?.let { node ->
-
-                            with(node.fragments.artistBasicFragment) {
-
-                                val imageUrl: String? =
-                                    if (fanArt?.backgrounds?.size!! > 0) {
-                                        fanArt.backgrounds[0]?.url
-                                            .toString()
-                                    } else {
-                                        null
-                                    }
-
-                                artist.id = id
-                                artist.name = name
-                                artist.disambiguation = disambiguation
-                                artist.photoUrl = imageUrl
-                            }
-                        }
-
-                        listArtists.add(artist)
+                        edge?.let { listArtists.add(ArtistApp(it)) }
                     }
                     listOfArtistsLiveData.postValue(listArtists)
                 }
@@ -115,4 +92,19 @@ class ArtistsViewModel @Inject constructor(
         onRefresh()
     }
 
+    fun onBookmarkClicked(artistApp: ArtistApp) {
+
+        if(artistApp.id == null)
+            return
+
+        viewModelScope.launch {
+            val artistEntity = ArtistEntity(artistApp)
+            val favorite = myDao.getOneBookmark(artistEntity.id)
+            if (favorite == null) {
+                myDao.insert(artistEntity)
+            } else {
+                myDao.delete(artistEntity)
+            }
+        }
+    }
 }

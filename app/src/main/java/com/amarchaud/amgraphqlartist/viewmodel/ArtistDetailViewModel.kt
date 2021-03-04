@@ -3,113 +3,107 @@ package com.amarchaud.amgraphqlartist.viewmodel
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
-import androidx.databinding.Bindable
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.amarchaud.amgraphqlartist.ArtistQuery
-import com.amarchaud.amgraphqlartist.BR
-import com.amarchaud.amgraphqlartist.R
-import com.amarchaud.amgraphqlartist.base.BaseViewModel
 import com.amarchaud.amgraphqlartist.fragment.ArtistDetailsFragment
+import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
 import com.amarchaud.estats.model.database.AppDao
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.coroutines.await
 import com.apollographql.apollo.exception.ApolloException
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
+import javax.inject.Inject
 
-//@HiltViewModel
-class ArtistDetailViewModel @AssistedInject constructor(
+@HiltViewModel
+class ArtistDetailViewModel @Inject constructor(
     val app: Application,
     val myDao: AppDao,
     private val apolloClient: ApolloClient,
-    @Assisted val artist: ArtistEntity
-) : BaseViewModel(app) {
+) : AndroidViewModel(app) {
 
-    @dagger.assisted.AssistedFactory
-    interface AssistedFactory {
-        fun create(artist: ArtistEntity): ArtistDetailViewModel
-    }
 
     companion object {
         const val TAG = "ArtistDetailViewModel"
-
-
-        fun provideFactory(
-            assistedFactory: AssistedFactory,
-            artist: ArtistEntity
-        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                return assistedFactory.create(artist) as T
-            }
-        }
     }
 
-    @Bindable
-    var loadingGeneral: Boolean = false
+    // given by view
+    lateinit var artistApp: ArtistApp
 
-    @Bindable
-    var loadingRelease: Boolean = false
+    private var _loadingGeneral = MutableLiveData(false)
+    val loadingGeneral: LiveData<Boolean>
+        get() = _loadingGeneral
 
-    @Bindable
-    var countryCodeDetail: String? = null
-
-    @Bindable
-    var countryDetail: String? = null
-
-    @Bindable
-    var genderDetail: String? = null
-
-    @Bindable
-    var ratingDetail: String? = null
-
-    @Bindable
-    var typeDetail: String? = null
-
-    @Bindable
-    var ratingBar: Float? = null
-
-    @Bindable
-    var reviews: Int? = null
+    private var _loadingRelease = MutableLiveData(false)
+    val loadingRelease: LiveData<Boolean>
+        get() = _loadingRelease
 
 
-    init {
-        onSearch()
-    }
+    private var _countryCodeDetail = MutableLiveData<String?>(null)
+    val countryCodeDetail: LiveData<String?>
+        get() = _countryCodeDetail
 
-    var nameLiveData: MutableLiveData<String> = MutableLiveData()
-    var disambiguationLiveData: MutableLiveData<String> = MutableLiveData()
-    var photoUrlLiveData: MutableLiveData<String> = MutableLiveData()
+    private var _countryDetail = MutableLiveData<String?>(null)
+    val countryDetail: LiveData<String?>
+        get() = _countryDetail
 
-    var artistsRelationshipsLiveData: MutableLiveData<List<ArtistEntity>> = MutableLiveData()
-    var albumsLiveData: MutableLiveData<List<ArtistDetailsFragment.Node?>?> = MutableLiveData()
+    private var _genderDetail = MutableLiveData<String?>(null)
+    val genderDetail: LiveData<String?>
+        get() = _genderDetail
 
-    var isArtistInBookMarkedDb: MutableLiveData<Boolean> = MutableLiveData()
+    private var _ratingDetail = MutableLiveData<String?>(null)
+    val ratingDetail: LiveData<String?>
+        get() = _ratingDetail
 
-    init {
-        viewModelScope.launch {
-            isArtistInBookMarkedDb.postValue(myDao.getOneBookmark(artist.id) != null)
-        }
-    }
+    private var _typeDetail = MutableLiveData<String?>(null)
+    val typeDetail: LiveData<String?>
+        get() = _typeDetail
+
+    private var _ratingBar = MutableLiveData<Float?>(null)
+    val ratingBar: LiveData<Float?>
+        get() = _ratingBar
+
+
+    private var _reviews = MutableLiveData<Int?>(null)
+    val reviews: LiveData<Int?>
+        get() = _reviews
+
+
+    private var _nameLiveData = MutableLiveData<String?>()
+    val nameLiveData: LiveData<String?>
+        get() = _nameLiveData
+
+    private var _disambiguationLiveData = MutableLiveData<String?>()
+    val disambiguationLiveData: LiveData<String?>
+        get() = _disambiguationLiveData
+
+    private var _photoUrlLiveData = MutableLiveData<String>()
+    val photoUrlLiveData: LiveData<String>
+        get() = _photoUrlLiveData
+
+    private var _artistsRelationshipsLiveData = MutableLiveData<List<ArtistApp>>()
+    val artistsRelationshipsLiveData: LiveData<List<ArtistApp>>
+        get() = _artistsRelationshipsLiveData
+
+    private var _albumsLiveData = MutableLiveData<List<ArtistDetailsFragment.Node?>?>()
+    val albumsLiveData: LiveData<List<ArtistDetailsFragment.Node?>?>
+        get() = _albumsLiveData
+
 
     fun onSearch() {
 
+        if(artistApp.id == null)
+            return
+
         viewModelScope.launch {
 
-            loadingGeneral = true
-            notifyPropertyChanged(BR.loadingGeneral)
-
-            loadingRelease = true
-            notifyPropertyChanged(BR.loadingRelease)
+            _loadingGeneral.postValue(true)
+            _loadingRelease.postValue(true)
 
             val response = try {
-                apolloClient.query(ArtistQuery(artist.id)).await()
+                apolloClient.query(ArtistQuery(artistApp.id!!)).await()
             } catch (e: ApolloException) {
                 Log.d(TAG, "Failure", e)
                 Toast.makeText(app, e.message, Toast.LENGTH_LONG).show()
@@ -117,12 +111,8 @@ class ArtistDetailViewModel @AssistedInject constructor(
             }
 
             if (response == null) {
-                loadingGeneral = false
-                notifyPropertyChanged(BR.loadingGeneral)
-
-                loadingRelease = false
-                notifyPropertyChanged(BR.loadingRelease)
-
+                _loadingGeneral.postValue(false)
+                _loadingRelease.postValue(false)
             } else {
 
                 response.data?.node?.fragments?.artistDetailsFragment?.let {
@@ -130,33 +120,31 @@ class ArtistDetailViewModel @AssistedInject constructor(
                     // common details
                     with(it.fragments.artistBasicFragment) {
 
-                        nameLiveData.postValue(name)
-                        disambiguationLiveData.postValue(disambiguation)
+                        _nameLiveData.postValue(name)
+                        _disambiguationLiveData.postValue(disambiguation)
 
                         if (fanArt?.backgrounds?.size!! > 0) {
-                            photoUrlLiveData.postValue(
+                            _photoUrlLiveData.postValue(
                                 fanArt.backgrounds.get(0)?.url.toString()
                             )
                         }
                     }
 
                     // new details
-                    countryCodeDetail = it.country
-                    genderDetail = it.gender
-                    typeDetail = it.type // group or solo
-                    countryDetail = it.area?.name // name of the country
-                    ratingDetail = formatRatings(it)
-                    ratingBar = ratingBar(it)
-                    reviews = it.rating?.voteCount
-                    notifyChange()
+                    _countryCodeDetail.postValue(it.country)
+                    _genderDetail.postValue(it.gender)
+                    _typeDetail.postValue(it.type)
+                    _countryDetail.postValue(it.area?.name)
+                    _ratingDetail.postValue(formatRatings(it))
+                    _ratingBar.postValue(ratingBar(it))
+                    _reviews.postValue(it.rating?.voteCount)
 
-                    albumsLiveData.postValue(it.releaseGroups?.nodes)
+                    _albumsLiveData.postValue(it.releaseGroups?.nodes)
 
-                    loadingRelease = false
-                    notifyPropertyChanged(BR.loadingRelease)
+                    _loadingRelease.postValue(false)
 
                     // TODO relationships is always NULL.... WHY ??????
-                    val listArtists = mutableListOf<ArtistEntity>()
+                    val listArtists = mutableListOf<ArtistApp>()
                     it.relationships?.artists?.nodes?.filterNotNull()?.forEach { node ->
                         with(node.target.fragments.artistBasicFragment) {
 
@@ -170,14 +158,13 @@ class ArtistDetailViewModel @AssistedInject constructor(
                                     null
                                 }
 
-                            listArtists.add(ArtistEntity(id, name, disambiguation, imageUrl))
+                            listArtists.add(ArtistApp(id, name, disambiguation, imageUrl, null, false))
                         }
                     }
 
-                    artistsRelationshipsLiveData.postValue(listArtists)
+                    _artistsRelationshipsLiveData.postValue(listArtists)
 
-                    loadingGeneral = false
-                    notifyPropertyChanged(BR.loadingGeneral)
+                    _loadingGeneral.postValue(false)
                 }
             }
         }
@@ -191,15 +178,19 @@ class ArtistDetailViewModel @AssistedInject constructor(
         return artistDetailsFragment.rating?.value?.div(2)?.toFloat() ?: 0f
     }
 
-    fun onBookMarkedClick() {
+    fun onBookmarkClicked() {
+
+        if (artistApp.id.isNullOrEmpty())
+            return
+
+        artistApp.isFavorite = !artistApp.isFavorite
+
         viewModelScope.launch {
-            val toDelete = myDao.getOneBookmark(artist.id)
+            val toDelete = myDao.getOneBookmark(artistApp.id!!)
             if (toDelete == null) {
-                myDao.insert(artist)
-                isArtistInBookMarkedDb.postValue(true)
+                myDao.insert(ArtistEntity(artistApp))
             } else {
-                myDao.delete(artist)
-                isArtistInBookMarkedDb.postValue(false)
+                myDao.delete(toDelete)
             }
         }
     }

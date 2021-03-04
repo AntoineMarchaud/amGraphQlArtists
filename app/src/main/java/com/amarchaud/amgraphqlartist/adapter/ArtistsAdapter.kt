@@ -2,26 +2,19 @@ package com.amarchaud.amgraphqlartist.adapter
 
 import android.net.Uri
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.UiThread
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.databinding.ItemArtistBinding
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
-import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
-import com.amarchaud.estats.model.database.AppDao
+import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.bumptech.glide.Glide
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 
 class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
     RecyclerView.Adapter<ArtistsAdapter.ArtistViewHolder>() {
-
-    private var artists: List<ArtistEntity> = ArrayList()
-    var myDao: AppDao? = null
+    private var artists: List<ArtistApp> = ArrayList()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -66,11 +59,11 @@ class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
     inner class ArtistViewHolder(var binding: ItemArtistBinding) :
         RecyclerView.ViewHolder(binding.root)
 
-    fun setArtistWithoutRefresh(newArtists: List<ArtistEntity>) {
+    fun setArtistWithoutRefresh(newArtists: List<ArtistApp>) {
         artists = newArtists
     }
 
-    fun setArtist(newArtists: List<ArtistEntity>) {
+    fun setArtist(newArtists: List<ArtistApp>) {
         if (newArtists.isNullOrEmpty()) {
             artists = newArtists
             notifyDataSetChanged()
@@ -88,33 +81,29 @@ class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
     //set the initial state of the favorites icon by checking if its a favorite in the database
     private fun setupFavoriteIndicator(
         binding: ItemArtistBinding,
-        artist: ArtistEntity,
+        artistApp: ArtistApp,
         clickListener: IArtistClickListener
     ) {
 
         with(binding) {
 
-            artistBookmark.isChecked = false //set default
-
-            //set the views state based on what is in the database
-            GlobalScope.launch {
-                val exist = myDao?.getOneBookmark(artist.id)
-
-                @UiThread
-                artistBookmark.isChecked = (exist != null)
-            }
+            artistBookmark.isChecked = artistApp.isFavorite //set default
 
             //handle the status changes for favorites when the user clicks the star
             artistBookmark.setOnClickListener {
-                clickListener.onBookmarkClicked(artist)
+                artistApp.id.let {
+                    artistApp.isFavorite = !artistApp.isFavorite
+                    artistBookmark.isChecked = artistApp.isFavorite //set new value
+                    clickListener.onBookmarkClicked(artistApp)
+                }
             }
         }
 
     }
 
     open class DiffCallback(
-        private val oldList: List<ArtistEntity>,
-        private val newList: List<ArtistEntity>
+        private val oldList: List<ArtistApp>,
+        private val newList: List<ArtistApp>
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize(): Int {

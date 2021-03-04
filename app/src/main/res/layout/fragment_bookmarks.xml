@@ -20,7 +20,7 @@
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="@{BookmarksViewModel.loading ? View.VISIBLE : View.GONE}"
+            android:visibility="@{BookmarksViewModel.loadingLiveData ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -30,7 +30,7 @@
             android:id="@+id/artistsRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="@{BookmarksViewModel.loading ? View.INVISIBLE : View.VISIBLE}" />
+            android:visibility="@{BookmarksViewModel.loadingLiveData ? View.INVISIBLE : View.VISIBLE}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

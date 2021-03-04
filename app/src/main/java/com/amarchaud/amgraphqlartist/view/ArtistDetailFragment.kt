@@ -19,19 +19,15 @@ import com.amarchaud.amgraphqlartist.adapter.AlbumsAdapter
 import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
 import com.amarchaud.amgraphqlartist.databinding.FragmentArtistDetailBinding
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
-import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
+import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.amarchaud.amgraphqlartist.viewmodel.ArtistDetailViewModel
 import com.amarchaud.amgraphqlartist.viewmodel.data.ArtistToDeleteViewModel
-import com.amarchaud.estats.model.database.AppDao
 import com.bumptech.glide.Glide
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class ArtistDetailFragment : Fragment(), IArtistClickListener {
-
 
     companion object {
         const val TAG = "BookMarksFragment"
@@ -40,17 +36,8 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
     private var _binding: FragmentArtistDetailBinding? = null
     private val binding get() = _binding!!
 
-    @Inject
-    lateinit var myDao: AppDao
-
-    @Inject
-    lateinit var viewModelFactory: ArtistDetailViewModel.AssistedFactory
-
-
     // give Id to ViewModel by injection
-    private val viewModel: ArtistDetailViewModel by viewModels {
-        ArtistDetailViewModel.provideFactory(viewModelFactory, args.artist)
-    }
+    private val viewModel: ArtistDetailViewModel by viewModels()
 
     // arguments given by NavigationGraph
     val args: ArtistDetailFragmentArgs by navArgs()
@@ -66,9 +53,6 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        relationShipsRecyclerAdapter.myDao = myDao
-
         _binding = FragmentArtistDetailBinding.inflate(inflater)
         return binding.root
     }
@@ -77,6 +61,10 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
         super.onViewCreated(view, savedInstanceState)
         binding.artistDetailViewModel = viewModel
         binding.lifecycleOwner = this
+
+
+        // give param to viewmodel
+        viewModel.artistApp = args.artist
 
         with(binding) {
 
@@ -87,11 +75,9 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
 
             // init Favorite image
             lifecycleScope.launch {
-                val favorite = myDao.getOneBookmark(args.artist.id)
-                val isFavorite = favorite != null && favorite.id == args.artist.id
 
                 requireActivity().runOnUiThread {
-                    
+
                     commonDetails.artistName.text = args.artist.name
                     commonDetails.artistDisambiguation.text = args.artist.disambiguation
 
@@ -109,7 +95,10 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                     detailsIsFavorite.setImageDrawable(
                         ContextCompat.getDrawable(
                             requireContext(),
-                            if (isFavorite) R.drawable.star_circle else R.drawable.star_circle_disabled
+                            if (args.artist.isFavorite)
+                                R.drawable.star_circle
+                            else
+                                R.drawable.star_circle_disabled
                         )
                     )
                     detailsIsFavorite.visibility = View.VISIBLE
@@ -117,9 +106,23 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
             }
 
             detailsIsFavorite.setOnClickListener {
-                viewModel.onBookMarkedClick()
+                viewModel.onBookmarkClicked()
+
+                requireActivity().runOnUiThread {
+                    detailsIsFavorite.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            if (viewModel.artistApp.isFavorite)
+                                R.drawable.star_circle
+                            else
+                                R.drawable.star_circle_disabled
+                        )
+                    )
+                    detailsIsFavorite.visibility = View.VISIBLE
+                }
             }
 
+            /*
             viewModel.isArtistInBookMarkedDb.observe(viewLifecycleOwner, {
                 requireActivity().runOnUiThread {
                     detailsIsFavorite.setImageDrawable(
@@ -130,36 +133,9 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                     )
                     detailsIsFavorite.visibility = View.VISIBLE
                 }
-            })
-
-            // check box init state
-            lifecycleScope.launch {
-                val exist = myDao.getOneBookmark(args.artist.id) != null
-                requireActivity().runOnUiThread {
-                    commonDetails.artistBookmark.isChecked = exist
-                }
-            }
-
-
-            /*
-            // useless, we have the artist by navArgs
-            viewModel.nameLiveData.observe(viewLifecycleOwner, {
-                commonDetails.artistName.text = it
-            })
-            viewModel.disambiguationLiveData.observe(viewLifecycleOwner, {
-                commonDetails.artistDisambiguation.text = it
-            })
-            viewModel.photoUrlLiveData.observe(viewLifecycleOwner, {
-
-                try {
-                    Glide.with(requireContext())
-                        .load(it)
-                        .error(R.drawable.ic_unknown)
-                        .into(commonDetails.artistImage)
-                } catch (e: IllegalArgumentException) {
-                    commonDetails.artistImage.setImageResource(R.drawable.ic_unknown)
-                }
             })*/
+
+            commonDetails.artistBookmark.visibility = View.INVISIBLE
             // **************** Recycler View management
 
             albumsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
@@ -183,21 +159,21 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
             })
 
         }
+        viewModel.onSearch()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
 
-        // send event to listener (in our case : previous Fragment)
-        if (viewModel.isArtistInBookMarkedDb.value != true) {
+        if (viewModel.artistApp.isFavorite) {
             artistToDeleteViewModel.artistToDeleteLiveData.postValue(
-                ArtistToDeleteViewModel.ArtistToDelete(
-                    args.artist
-                )
+                null
             )
         } else {
-            artistToDeleteViewModel.artistToDeleteLiveData.postValue(null)
+            artistToDeleteViewModel.artistToDeleteLiveData.postValue(
+                ArtistToDeleteViewModel.ArtistToDelete(viewModel.artistApp)
+            )
         }
     }
 
@@ -205,11 +181,11 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
     /**
      * Management relationship here
      */
-    override fun onArtistClicked(artistEntity: ArtistEntity) {
-        // no details here
+    override fun onArtistClicked(artistApp: ArtistApp) {
+
     }
 
-    override fun onBookmarkClicked(artistEntity: ArtistEntity) {
-        // impossible
+    override fun onBookmarkClicked(artistApp: ArtistApp) {
+
     }
 }

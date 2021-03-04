@@ -38,6 +38,6 @@
         android:label="ArtistDetailFragment" >
         <argument
             android:name="artist"
-            app:argType="com.amarchaud.amgraphqlartist.model.entity.ArtistEntity" />
+            app:argType="com.amarchaud.amgraphqlartist.model.app.ArtistApp" />
     </fragment>
 </navigation>

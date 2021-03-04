@@ -13,15 +13,13 @@ import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
 import com.amarchaud.amgraphqlartist.databinding.FragmentArtistsBinding
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
-import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
+import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.amarchaud.amgraphqlartist.viewmodel.ArtistsViewModel
-import com.amarchaud.estats.model.database.AppDao
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -38,9 +36,6 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
 
     private val viewModel: ArtistsViewModel by viewModels()
 
-    @Inject
-    lateinit var myDao: AppDao
-
     // recycler view
     private var artistsRecyclerAdapter = ArtistsAdapter(this)
 
@@ -54,8 +49,6 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
     ): View {
 
         setHasOptionsMenu(true)
-
-        artistsRecyclerAdapter.myDao = myDao
 
         _binding = FragmentArtistsBinding.inflate(inflater)
         return binding.root
@@ -216,21 +209,15 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
         })
     }
 
-    override fun onArtistClicked(artistEntity: ArtistEntity) {
+    override fun onArtistClicked(artistApp: ArtistApp) {
         findNavController().navigate(
             ArtistsFragmentDirections.actionArtistsFragmentToArtistDetailFragment(
-                artistEntity
+                artistApp
             )
         )
     }
 
-    override fun onBookmarkClicked(artistEntity: ArtistEntity) {
-        GlobalScope.launch {
-            if (myDao.getOneBookmark(artistEntity.id) == null) {
-                myDao.insert(artistEntity)
-            } else {
-                myDao.delete(artistEntity)
-            }
-        }
+    override fun onBookmarkClicked(artistApp: ArtistApp) {
+        viewModel.onBookmarkClicked(artistApp)
     }
 }
