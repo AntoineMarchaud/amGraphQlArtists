@@ -1,18 +1,13 @@
 package com.amarchaud.amgraphqlartist.viewmodel
 
 import android.app.Application
-import androidx.databinding.Bindable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.amarchaud.amgraphqlartist.BR
-import com.amarchaud.amgraphqlartist.base.BaseViewModel
 import com.amarchaud.amgraphqlartist.model.app.ArtistApp
-import com.amarchaud.amgraphqlartist.model.entity.ArtistEntity
 import com.amarchaud.estats.model.database.AppDao
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
