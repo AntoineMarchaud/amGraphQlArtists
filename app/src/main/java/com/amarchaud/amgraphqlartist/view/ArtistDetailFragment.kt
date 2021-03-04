@@ -56,7 +56,7 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
     val args: ArtistDetailFragmentArgs by navArgs()
 
     // recycler view
-    private var albumsRecyclerAdapter = AlbumsAdapter(requireContext())
+    private var albumsRecyclerAdapter = AlbumsAdapter()
     private var relationShipsRecyclerAdapter = ArtistsAdapter(this)
 
     // special viewModel

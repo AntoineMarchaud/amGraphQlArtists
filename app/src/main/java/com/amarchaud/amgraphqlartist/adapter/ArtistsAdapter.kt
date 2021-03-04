@@ -32,7 +32,7 @@ class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
     }
 
     override fun onBindViewHolder(holder: ArtistsAdapter.ArtistViewHolder, position: Int) {
-        val context = holder.itemView.context
+
         with(artists[position]) {
 
             holder.binding.artistName.text = name
@@ -42,7 +42,7 @@ class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
                 holder.binding.artistImage.setImageResource(R.drawable.ic_unknown)
             } else {
                 try {
-                    Glide.with(context)
+                    Glide.with(holder.itemView)
                         .load(Uri.parse(photoUrl))
                         .error(R.drawable.ic_unknown)
                         .into(holder.binding.artistImage)
