@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.databinding.ItemArtistBinding
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
+import com.amarchaud.amgraphqlartist.interfaces.IArtistListener
 import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.bumptech.glide.Glide
 
@@ -102,8 +103,8 @@ class ArtistsAdapter(private val onClickListener: IArtistClickListener) :
     }
 
     open class DiffCallback(
-        private val oldList: List<ArtistApp>,
-        private val newList: List<ArtistApp>
+        private val oldList: List<IArtistListener>,
+        private val newList: List<IArtistListener>
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize(): Int {
