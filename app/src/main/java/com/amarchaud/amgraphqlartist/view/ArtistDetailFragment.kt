@@ -106,34 +106,32 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
             }
 
             detailsIsFavorite.setOnClickListener {
+
                 viewModel.onBookmarkClicked()
 
-                requireActivity().runOnUiThread {
-                    detailsIsFavorite.setImageDrawable(
-                        ContextCompat.getDrawable(
-                            requireContext(),
-                            if (viewModel.artistApp.isFavorite)
-                                R.drawable.star_circle
-                            else
-                                R.drawable.star_circle_disabled
-                        )
-                    )
-                    detailsIsFavorite.visibility = View.VISIBLE
-                }
-            }
+                if (viewModel.artistApp.isFavorite) {
+                    artistToDeleteViewModel.setArtistToDelete(null)
 
-            /*
-            viewModel.isArtistInBookMarkedDb.observe(viewLifecycleOwner, {
-                requireActivity().runOnUiThread {
                     detailsIsFavorite.setImageDrawable(
                         ContextCompat.getDrawable(
                             requireContext(),
-                            if (it) R.drawable.star_circle else R.drawable.star_circle_disabled
+                            R.drawable.star_circle
                         )
                     )
-                    detailsIsFavorite.visibility = View.VISIBLE
+                } else {
+
+                    artistToDeleteViewModel.setArtistToDelete(viewModel.artistApp)
+
+                    detailsIsFavorite.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            R.drawable.star_circle_disabled
+                        )
+                    )
                 }
-            })*/
+                detailsIsFavorite.visibility = View.VISIBLE
+
+            }
 
             commonDetails.artistBookmark.visibility = View.INVISIBLE
             // **************** Recycler View management
@@ -165,16 +163,6 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-
-        if (viewModel.artistApp.isFavorite) {
-            artistToDeleteViewModel.artistToDeleteLiveData.postValue(
-                null
-            )
-        } else {
-            artistToDeleteViewModel.artistToDeleteLiveData.postValue(
-                ArtistToDeleteViewModel.ArtistToDelete(viewModel.artistApp)
-            )
-        }
     }
 
 
