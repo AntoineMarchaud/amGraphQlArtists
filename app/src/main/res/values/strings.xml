@@ -17,4 +17,7 @@
     <string name="GraphQlError">GraphQlError</string>
     <string name="search_locations">Search Locations</string>
     <string name="search_glyph_text">No results to display</string>
+    <!-- exit -->
+    <string name="exitAppTitle">Exit app</string>
+    <string name="exitAppBody">Do you want to quit app ?</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.amarchaud.amgraphqlartist
 
+import android.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -71,10 +72,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /*
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.my_first_host_fragment)
-        return navController.navigateUp(appBarConfiguration)
-                || super.onSupportNavigateUp()
-    }*/
+    override fun onBackPressed() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.exitAppTitle)
+            .setMessage(R.string.exitAppBody)
+            .setPositiveButton(android.R.string.ok)  { dialog, which ->
+                finish()
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, which ->
+                dialog.dismiss()
+            }
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show()
+    }
 }
