@@ -6,10 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
@@ -31,6 +30,7 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
 
     companion object {
         const val TAG = "BookMarksFragment"
+        const val ARTIST_TO_DELETE = "artistToDelete"
     }
 
     private var _binding: FragmentArtistDetailBinding? = null
@@ -112,6 +112,8 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                 if (viewModel.artistApp.isFavorite) {
                     artistToDeleteViewModel.setArtistToDelete(null)
 
+                    clearFragmentResult(TAG)
+
                     detailsIsFavorite.setImageDrawable(
                         ContextCompat.getDrawable(
                             requireContext(),
@@ -121,6 +123,8 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                 } else {
 
                     artistToDeleteViewModel.setArtistToDelete(viewModel.artistApp)
+
+                    setFragmentResult(TAG, bundleOf(ARTIST_TO_DELETE to viewModel.artistApp))
 
                     detailsIsFavorite.setImageDrawable(
                         ContextCompat.getDrawable(

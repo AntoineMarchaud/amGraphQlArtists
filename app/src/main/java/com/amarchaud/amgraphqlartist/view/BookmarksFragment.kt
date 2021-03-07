@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -39,6 +40,15 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
     // special viewModel
     private val artistToDeleteViewModel: ArtistToDeleteViewModel by activityViewModels()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setFragmentResultListener(ArtistDetailFragment.TAG) { _, bundle ->
+            val result : ArtistApp? = bundle.getParcelable(ArtistDetailFragment.ARTIST_TO_DELETE)
+            result?.let { viewModel.refresh() }
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -63,7 +73,7 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
 
             artistToDeleteViewModel.artistToDeleteLiveData.observe(viewLifecycleOwner, {
                 if (it != null) {
-                    viewModel.refresh()
+                    //viewModel.refresh()
                 }
             })
         }
