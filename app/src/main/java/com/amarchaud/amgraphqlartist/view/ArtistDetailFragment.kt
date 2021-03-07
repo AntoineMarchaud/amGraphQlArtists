@@ -20,7 +20,6 @@ import com.amarchaud.amgraphqlartist.databinding.FragmentArtistDetailBinding
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
 import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.amarchaud.amgraphqlartist.viewmodel.ArtistDetailViewModel
-import com.amarchaud.amgraphqlartist.viewmodel.data.ArtistToDeleteViewModel
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -46,8 +45,6 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
     private var albumsRecyclerAdapter = AlbumsAdapter()
     private var relationShipsRecyclerAdapter = ArtistsAdapter(this)
 
-    // special viewModel
-    private val artistToDeleteViewModel: ArtistToDeleteViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -110,7 +107,6 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                 viewModel.onBookmarkClicked()
 
                 if (viewModel.artistApp.isFavorite) {
-                    artistToDeleteViewModel.setArtistToDelete(null)
 
                     clearFragmentResult(TAG)
 
@@ -121,8 +117,6 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
                         )
                     )
                 } else {
-
-                    artistToDeleteViewModel.setArtistToDelete(viewModel.artistApp)
 
                     setFragmentResult(TAG, bundleOf(ARTIST_TO_DELETE to viewModel.artistApp))
 

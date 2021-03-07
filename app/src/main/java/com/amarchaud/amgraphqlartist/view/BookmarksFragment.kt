@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -18,7 +17,6 @@ import com.amarchaud.amgraphqlartist.databinding.FragmentBookmarksBinding
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
 import com.amarchaud.amgraphqlartist.model.app.ArtistApp
 import com.amarchaud.amgraphqlartist.viewmodel.BookmarksViewModel
-import com.amarchaud.amgraphqlartist.viewmodel.data.ArtistToDeleteViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -36,9 +34,6 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
 
     // recycler view
     private var artistsRecyclerAdapter = ArtistsAdapter(this)
-
-    // special viewModel
-    private val artistToDeleteViewModel: ArtistToDeleteViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,12 +64,6 @@ class BookmarksFragment : Fragment(), IArtistClickListener {
 
             viewModel.artistsBookmarkedLiveData.observe(viewLifecycleOwner, {
                 artistsRecyclerAdapter.setArtist(it)
-            })
-
-            artistToDeleteViewModel.artistToDeleteLiveData.observe(viewLifecycleOwner, {
-                if (it != null) {
-                    //viewModel.refresh()
-                }
             })
         }
     }
