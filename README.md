@@ -1,6 +1,6 @@
 # amGraphQlArtists
 
-A app for testing GraphQL with graphbrainz database.
+An app for testing GraphQL with graphbrainz database.
 
 - Kotlin /Coroutine
 - MVVM (ViewBinding/Databinding/LiveData)
