@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -12,6 +13,8 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.amarchaud.amgraphqlartist.databinding.ActivityMainBinding
+import com.amarchaud.amgraphqlartist.view.ArtistsFragment
+import com.amarchaud.amgraphqlartist.view.BookmarksFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -72,17 +75,32 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getForegroundFragment(): Fragment? {
+        val navHostFragment: Fragment? =
+            supportFragmentManager.findFragmentById(R.id.my_first_host_fragment)
+        return navHostFragment?.childFragmentManager?.fragments?.get(0)
+    }
+
     override fun onBackPressed() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.exitAppTitle)
-            .setMessage(R.string.exitAppBody)
-            .setPositiveButton(android.R.string.ok)  { dialog, which ->
-                finish()
+
+        val currentFragment = getForegroundFragment()
+        currentFragment?.let {
+
+            if (it is ArtistsFragment || it is BookmarksFragment) {
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.exitAppTitle)
+                    .setMessage(R.string.exitAppBody)
+                    .setPositiveButton(android.R.string.ok) { dialog, which ->
+                        finish()
+                    }
+                    .setNegativeButton(android.R.string.cancel) { dialog, which ->
+                        dialog.dismiss()
+                    }
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show()
+            } else {
+                super.onBackPressed()
             }
-            .setNegativeButton(android.R.string.cancel) { dialog, which ->
-                dialog.dismiss()
-            }
-            .setIcon(android.R.drawable.ic_dialog_alert)
-            .show()
+        } ?: super.onBackPressed()
     }
 }
