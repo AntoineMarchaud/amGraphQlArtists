@@ -6,11 +6,12 @@ import android.view.*
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.amarchaud.amgraphqlartist.R
-import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
+import com.amarchaud.amgraphqlartist.adapter.ArtistsLoadStateAdapter
+import com.amarchaud.amgraphqlartist.adapter.ArtistsPagingAdapter
 import com.amarchaud.amgraphqlartist.databinding.FragmentArtistsBinding
 import com.amarchaud.amgraphqlartist.interfaces.IArtistClickListener
 import com.amarchaud.amgraphqlartist.model.app.ArtistApp
@@ -37,7 +38,8 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
     private val viewModel: ArtistsViewModel by viewModels()
 
     // recycler view
-    private var artistsRecyclerAdapter = ArtistsAdapter(this)
+    //private var artistsRecyclerAdapter = ArtistsAdapter(this)
+    private var artistsPagingRecyclerAdapter = ArtistsPagingAdapter(this)
 
     private var mJobDebounce: Job? = null
     private var mStoredQuery: String? = null
@@ -76,39 +78,27 @@ class ArtistsFragment : Fragment(), IArtistClickListener {
             }
 
             mainSwipeRefresh.setOnRefreshListener {
-                if (viewModel.currentArtistSearched.isBlank()) {
+                if (viewModel.currentArtistSearched.value?.isBlank() == true) {
                     mainSwipeRefresh.isRefreshing = false
                     return@setOnRefreshListener
                 }
-                setSearchQuery(viewModel.currentArtistSearched)
+                viewModel.forceRefresh()
             }
 
             artistsRecyclerView.layoutManager =
                 LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
-            artistsRecyclerView.adapter = artistsRecyclerAdapter
+            //artistsRecyclerView.adapter = artistsRecyclerAdapter
+            artistsRecyclerView.adapter = artistsPagingRecyclerAdapter.withLoadStateHeaderAndFooter(
+                header = ArtistsLoadStateAdapter { artistsPagingRecyclerAdapter.retry() },
+                footer = ArtistsLoadStateAdapter { artistsPagingRecyclerAdapter.retry() },
+            )
 
-            artistsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    super.onScrollStateChanged(recyclerView, newState)
-                    if (!recyclerView.canScrollVertically(1)) {
-                        // bottom of the list !
-                        // call next artists
-                        mainSwipeRefresh.isRefreshing = true
-                        viewModel.onRefresh(true)
-                    }
-                }
-            })
 
-            viewModel.listOfArtistsLiveData.observe(viewLifecycleOwner, {
-
+            viewModel.artists.observe(viewLifecycleOwner, {
                 mainSwipeRefresh.isRefreshing = false
-
-                if (it.isEmpty()) {
-                    //set empty state
-                    toggleEmptyState(true)
-                } else {
-                    toggleEmptyState(false)
-                    artistsRecyclerAdapter.setArtist(it)
+                toggleEmptyState(false)
+                lifecycleScope.launch {
+                    artistsPagingRecyclerAdapter.submitData(it)
                 }
             })
         }
