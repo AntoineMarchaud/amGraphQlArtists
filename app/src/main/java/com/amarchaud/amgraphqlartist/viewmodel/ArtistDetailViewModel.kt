@@ -1,6 +1,7 @@
 package com.amarchaud.amgraphqlartist.viewmodel
 
 import android.app.Application
+import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.*
@@ -12,6 +13,7 @@ import com.amarchaud.estats.model.database.AppDao
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.coroutines.await
 import com.apollographql.apollo.exception.ApolloException
+import dagger.assisted.Assisted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
@@ -22,15 +24,16 @@ class ArtistDetailViewModel @Inject constructor(
     val app: Application,
     val myDao: AppDao,
     private val apolloClient: ApolloClient,
+    private val savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(app) {
-
 
     companion object {
         const val TAG = "ArtistDetailViewModel"
     }
 
-    // given by view
-    lateinit var artistApp: ArtistApp
+    // given by View, with Hilt injection
+    val artistApp
+        get() = savedStateHandle.get<ArtistApp>("artist")
 
     private var _loadingGeneral = MutableLiveData(false)
     val loadingGeneral: LiveData<Boolean>
@@ -94,7 +97,7 @@ class ArtistDetailViewModel @Inject constructor(
 
     fun onSearch() {
 
-        if(artistApp.id == null)
+        if (artistApp?.id == null)
             return
 
         viewModelScope.launch {
@@ -103,7 +106,7 @@ class ArtistDetailViewModel @Inject constructor(
             _loadingRelease.postValue(true)
 
             val response = try {
-                apolloClient.query(ArtistQuery(artistApp.id!!)).await()
+                apolloClient.query(ArtistQuery(artistApp?.id!!)).await()
             } catch (e: ApolloException) {
                 Log.d(TAG, "Failure", e)
                 Toast.makeText(app, e.message, Toast.LENGTH_LONG).show()
@@ -158,7 +161,16 @@ class ArtistDetailViewModel @Inject constructor(
                                     null
                                 }
 
-                            listArtists.add(ArtistApp(id, name, disambiguation, imageUrl, null, false))
+                            listArtists.add(
+                                ArtistApp(
+                                    id,
+                                    name,
+                                    disambiguation,
+                                    imageUrl,
+                                    null,
+                                    false
+                                )
+                            )
                         }
                     }
 
@@ -180,18 +192,23 @@ class ArtistDetailViewModel @Inject constructor(
 
     fun onBookmarkClicked() {
 
-        if (artistApp.id.isNullOrEmpty())
+
+        if (artistApp?.id.isNullOrEmpty())
             return
 
-        artistApp.isFavorite = !artistApp.isFavorite
+        with(artistApp!!) {
+            isFavorite = !isFavorite
 
-        viewModelScope.launch {
-            val toDelete = myDao.getOneBookmark(artistApp.id!!)
-            if (toDelete == null) {
-                myDao.insert(ArtistEntity(artistApp))
-            } else {
-                myDao.delete(toDelete)
+            viewModelScope.launch {
+                val toDelete = myDao.getOneBookmark(id!!)
+                if (toDelete == null) {
+                    myDao.insert(ArtistEntity(this@with))
+                } else {
+                    myDao.delete(toDelete)
+                }
             }
         }
+
+
     }
 }

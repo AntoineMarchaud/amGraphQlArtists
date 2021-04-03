@@ -9,10 +9,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.*
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.savedstate.SavedStateRegistryOwner
 import com.amarchaud.amgraphqlartist.R
 import com.amarchaud.amgraphqlartist.adapter.AlbumsAdapter
 import com.amarchaud.amgraphqlartist.adapter.ArtistsAdapter
@@ -35,16 +39,14 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
     private var _binding: FragmentArtistDetailBinding? = null
     private val binding get() = _binding!!
 
-    // give Id to ViewModel by injection
-    private val viewModel: ArtistDetailViewModel by viewModels()
 
+    private val viewModel: ArtistDetailViewModel by viewModels()
     // arguments given by NavigationGraph
     val args: ArtistDetailFragmentArgs by navArgs()
 
     // recycler view
     private var albumsRecyclerAdapter = AlbumsAdapter()
     private var relationShipsRecyclerAdapter = ArtistsAdapter(this)
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,10 +60,6 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
         super.onViewCreated(view, savedInstanceState)
         binding.artistDetailViewModel = viewModel
         binding.lifecycleOwner = this
-
-
-        // give param to viewmodel
-        viewModel.artistApp = args.artist
 
         with(binding) {
 
@@ -106,7 +104,7 @@ class ArtistDetailFragment : Fragment(), IArtistClickListener {
 
                 viewModel.onBookmarkClicked()
 
-                if (viewModel.artistApp.isFavorite) {
+                if (viewModel.artistApp?.isFavorite == true) {
 
                     clearFragmentResult(TAG)
 
